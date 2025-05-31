@@ -1,21 +1,9 @@
 import { useParams } from "react-router-dom";
-
-const dummyFunds = {
-  "FUND-A": {
-    name: "Private Equity Fund A",
-    symbol: "FUND-A",
-    availableUnits: 100,
-    totalAUM: "USD 50M",
-    category: "Buyout",
-    description:
-      "This fund focuses on acquiring majority stakes in mature companies."
-  }
-  // FUND-B, FUND-C も同様に追加可能
-};
+import { fundsBySymbol } from "../data/funds";
 
 export default function FundDetail() {
   const { symbol } = useParams();
-  const fund = dummyFunds[symbol];
+  const fund = fundsBySymbol[symbol];
 
   if (!fund) {
     return <div className="p-6">Fund not found.</div>;
