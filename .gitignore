@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# XRPL Testnet Address/Secret Key
+.env
