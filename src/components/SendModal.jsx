@@ -5,6 +5,7 @@ import { fundsBySymbol } from "../data/funds";
 export default function SendModal({ isOpen, onClose, symbol }) {
   const fund = fundsBySymbol[symbol];
   const [amount, setAmount] = useState("");
+  const [error, setError] = useState("");
 
   // ESCキーでモーダルを閉じる
   useEffect(() => {
@@ -31,10 +32,43 @@ export default function SendModal({ isOpen, onClose, symbol }) {
     };
   }, [isOpen]);
 
+  // モーダルが開かれるたびにフォームをリセット
+  useEffect(() => {
+    if (isOpen) {
+      setAmount("");
+      setError("");
+    }
+  }, [isOpen]);
+
+  const validateAmount = (value) => {
+    if (!value || value.trim() === "") {
+      return "Please enter an amount";
+    }
+    const numValue = Number(value);
+    if (isNaN(numValue) || numValue <= 0) {
+      return "Please enter a valid number greater than 0";
+    }
+    if (numValue > fund.availableUnits) {
+      return `Cannot exceed available units (${fund.availableUnits})`;
+    }
+    return "";
+  };
+
+  const handleAmountChange = (e) => {
+    const value = e.target.value;
+    setAmount(value);
+    setError(validateAmount(value));
+  };
+
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const validationError = validateAmount(amount);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     // ここに送金処理を実装
     console.log(`Sending ${amount} units to ${fund.symbol}`);
     onClose();
@@ -50,15 +84,15 @@ export default function SendModal({ isOpen, onClose, symbol }) {
 
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+        <div className="relative transform overflow-hidden rounded-lg bg-white px-6 pb-6 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-xl sm:p-8">
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 text-gray-400 hover:text-gray-500"
+            className="absolute right-6 top-6 text-gray-400 hover:text-gray-500"
           >
             <span className="sr-only">Close</span>
             <svg
-              className="h-6 w-6"
+              className="h-8 w-8"
               fill="none"
               viewBox="0 0 24 24"
               strokeWidth="1.5"
@@ -75,46 +109,59 @@ export default function SendModal({ isOpen, onClose, symbol }) {
           {/* Content */}
           <div className="sm:flex sm:items-start">
             <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
-              <h3 className="text-xl font-semibold leading-6 text-gray-900 mb-4">
+              <h3 className="text-2xl font-semibold leading-6 text-gray-900 mb-6">
                 Invest in {fund.name}
               </h3>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label
                     htmlFor="amount"
-                    className="block text-sm font-medium text-gray-700"
+                    className="block text-lg font-medium text-gray-700 mb-2"
                   >
                     Number of Units
                   </label>
-                  <div className="mt-1">
+                  <div className="mt-2">
                     <input
                       type="number"
                       name="amount"
                       id="amount"
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                      className={`block w-full rounded-md shadow-sm focus:ring-blue-500 text-lg py-2 px-3 ${
+                        error
+                          ? "border-red-300 focus:border-red-500"
+                          : "border-gray-300 focus:border-blue-500"
+                      }`}
                       placeholder="Enter amount"
                       value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
+                      onChange={handleAmountChange}
                       min="1"
                       max={fund.availableUnits}
                       required
                     />
                   </div>
-                  <p className="mt-2 text-sm text-gray-500">
-                    Available units: {fund.availableUnits}
-                  </p>
+                  {error ? (
+                    <p className="mt-2 text-lg text-red-600">{error}</p>
+                  ) : (
+                    <p className="mt-3 text-lg text-gray-500">
+                      Available units: {fund.availableUnits}
+                    </p>
+                  )}
                 </div>
 
-                <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                <div className="mt-8 sm:mt-6 sm:flex sm:flex-row-reverse gap-3">
                   <button
                     type="submit"
-                    className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
+                    className={`inline-flex w-full justify-center rounded-md px-5 py-3 text-lg font-semibold text-white shadow-sm sm:w-auto ${
+                      error
+                        ? "bg-blue-400 cursor-not-allowed"
+                        : "bg-blue-600 hover:bg-blue-500"
+                    }`}
+                    disabled={!!error}
                   >
                     Confirm Investment
                   </button>
                   <button
                     type="button"
-                    className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                    className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-5 py-3 text-lg font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
                     onClick={onClose}
                   >
                     Cancel
