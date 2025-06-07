@@ -1,24 +1,65 @@
 import React, { useEffect, useState } from "react";
 import { useFund } from "../contexts/FundContext";
+import { Client } from "xrpl";
+
+const TESTNET_URL = "wss://s.altnet.rippletest.net:51233";
 
 export default function WalletInfoModal({ isOpen, onClose }) {
   const { funds } = useFund();
   const [xrpBalance, setXrpBalance] = useState(null);
   const [tokenBalances, setTokenBalances] = useState({});
+  const [loading, setLoading] = useState(false);
+  const destinationAddress = import.meta.env.VITE_XRPL_DESTINATION_ADDRESS;
 
-  // Placeholder: Replace with actual logic to fetch balances
   useEffect(() => {
     if (!isOpen) return;
-    // Simulate async fetch
-    setTimeout(() => {
-      setXrpBalance("123.45"); // Replace with real XRP balance
-      setTokenBalances({
-        FDA: 10,
-        FDB: 5,
-        FDC: 0
-      });
-    }, 500);
-  }, [isOpen]);
+    let client;
+    setLoading(true);
+    setXrpBalance(null);
+    setTokenBalances({});
+
+    async function fetchBalances() {
+      try {
+        client = new Client(TESTNET_URL);
+        await client.connect();
+        // Fetch XRP balance
+        const accountInfo = await client.request({
+          command: "account_info",
+          account: destinationAddress,
+          ledger_index: "validated"
+        });
+        setXrpBalance(
+          (Number(accountInfo.result.account_data.Balance) / 1_000_000).toFixed(
+            6
+          )
+        );
+        // Fetch token balances
+        const lines = await client.request({
+          command: "account_lines",
+          account: destinationAddress
+        });
+        const balances = {};
+        for (const fund of funds) {
+          const line = lines.result.lines.find(
+            (l) => l.currency === fund.tokenSymbol
+          );
+          balances[fund.tokenSymbol] = line ? line.balance : "0";
+        }
+        setTokenBalances(balances);
+      } catch (e) {
+        setXrpBalance("Error");
+        setTokenBalances({});
+      } finally {
+        setLoading(false);
+        if (client && client.isConnected()) await client.disconnect();
+      }
+    }
+    fetchBalances();
+    // Cleanup on close
+    return () => {
+      if (client && client.isConnected()) client.disconnect();
+    };
+  }, [isOpen, destinationAddress, funds]);
 
   if (!isOpen) return null;
 
@@ -53,17 +94,21 @@ export default function WalletInfoModal({ isOpen, onClose }) {
         <div className="mb-4">
           <div className="text-lg font-semibold">XRP Balance</div>
           <div className="text-2xl text-blue-700 font-bold">
-            {xrpBalance !== null ? `${xrpBalance} XRP` : "..."}
+            {loading
+              ? "..."
+              : xrpBalance !== null
+              ? `${xrpBalance} XRP`
+              : "..."}
           </div>
         </div>
         <div>
           <div className="text-lg font-semibold mb-2">Token Balances</div>
           <ul>
             {funds.map((fund) => (
-              <li key={fund.tokenSymbol} className="flex justify-between py-1">
-                <span>{fund.tokenSymbol}</span>
+              <li key={fund.symbol} className="flex justify-between py-1">
+                <span>{fund.symbol}</span>
                 <span className="font-mono">
-                  {tokenBalances[fund.tokenSymbol] ?? "..."}
+                  {loading ? "..." : tokenBalances[fund.tokenSymbol] ?? "0"}
                 </span>
               </li>
             ))}
