@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
 import { fundsBySymbol } from "../data/funds";
 import toast from "react-hot-toast";
-import { sendXRP, isTransactionSuccessful } from "../lib/xrpl/sendXRP";
+import { sendToken, isTransactionSuccessful } from "../lib/xrpl/sendToken";
 
 export default function SendModal({ isOpen, onClose, symbol }) {
   const fund = fundsBySymbol[symbol];
@@ -71,15 +70,14 @@ export default function SendModal({ isOpen, onClose, symbol }) {
     setIsSubmitting(true);
 
     try {
-      // Send 10 XRP (fixed amount for now)
-      const xrpResult = await sendXRP(10);
+      const result = await sendToken(fund.tokenSymbol, amount);
 
-      if (!isTransactionSuccessful(xrpResult)) {
-        throw new Error("XRP transaction failed");
+      if (!isTransactionSuccessful(result)) {
+        throw new Error("Token transaction failed");
       }
 
       toast.success(
-        `✅ Successfully sent 10 XRP and invested in ${fund.name}`,
+        `✅ Successfully sent ${amount} ${fund.tokenSymbol} tokens`,
         {
           duration: 5000 // Show for 5 seconds
         }
@@ -144,9 +142,18 @@ export default function SendModal({ isOpen, onClose, symbol }) {
                   >
                     Investment Amount
                   </label>
-                  <p className="text-lg text-gray-600 mb-4">
-                    Fixed amount: 10 XRP
-                  </p>
+                  <input
+                    type="number"
+                    id="amount"
+                    value={amount}
+                    onChange={handleAmountChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-lg"
+                    placeholder="Enter amount"
+                    disabled={isSubmitting}
+                  />
+                  {error && (
+                    <p className="mt-2 text-sm text-red-600">{error}</p>
+                  )}
                   <p className="mt-3 text-lg text-gray-500">
                     Available # of Tokens: {fund.availableUnits}
                   </p>
@@ -160,7 +167,7 @@ export default function SendModal({ isOpen, onClose, symbol }) {
                         ? "bg-blue-400 cursor-not-allowed"
                         : "bg-blue-600 hover:bg-blue-500"
                     }`}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || error}
                   >
                     {isSubmitting ? (
                       <span className="inline-flex items-center">

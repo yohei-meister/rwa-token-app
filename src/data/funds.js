@@ -2,6 +2,7 @@ export const funds = [
   {
     name: "Private Equity Fund A",
     symbol: "FUND-A",
+    tokenSymbol: "FDA",
     availableUnits: 100,
     totalAUM: "USD 50M",
     category: "Buyout",
@@ -11,6 +12,7 @@ export const funds = [
   {
     name: "Growth Equity Fund B",
     symbol: "FUND-B",
+    tokenSymbol: "FDB",
     availableUnits: 50,
     totalAUM: "EUR 30M",
     category: "Growth Equity",
@@ -20,6 +22,7 @@ export const funds = [
   {
     name: "Venture Capital Fund C",
     symbol: "FUND-C",
+    tokenSymbol: "FDC",
     availableUnits: 150,
     totalAUM: "GBP 25M",
     category: "Venture Capital",
