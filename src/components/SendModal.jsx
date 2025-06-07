@@ -2,12 +2,18 @@ import { useEffect, useState } from "react";
 import { fundsBySymbol } from "../data/funds";
 import toast from "react-hot-toast";
 import { sendToken, isTransactionSuccessful } from "../lib/xrpl/sendToken";
+import { sendXRP } from "../lib/xrpl/sendXRP";
 
 export default function SendModal({ isOpen, onClose, symbol }) {
   const fund = fundsBySymbol[symbol];
   const [amount, setAmount] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Calculate total XRP cost
+  const totalXRP = amount
+    ? (Number(amount) * fund.tokenPrice).toFixed(2)
+    : "0.00";
 
   // ESCキーでモーダルを閉じる
   useEffect(() => {
@@ -67,29 +73,40 @@ export default function SendModal({ isOpen, onClose, symbol }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
     setIsSubmitting(true);
 
     try {
-      const result = await sendToken(fund.tokenSymbol, amount);
+      // First send tokens from issuer to destination
+      console.log("Sending tokens:", {
+        symbol: fund.tokenSymbol,
+        amount: amount,
+        to: import.meta.env.VITE_XRPL_DESTINATION_ADDRESS
+      });
 
-      if (!isTransactionSuccessful(result)) {
-        throw new Error("Token transaction failed");
-      }
+      const tokenResult = await sendToken(fund.tokenSymbol, amount);
+      console.log("Token transaction result:", tokenResult);
+
+      // Then send XRP from destination to issuer
+      const totalXRP = amount * fund.tokenPrice;
+      console.log("Sending XRP:", {
+        amount: totalXRP,
+        from: import.meta.env.VITE_XRPL_DESTINATION_ADDRESS,
+        to: import.meta.env.VITE_XRPL_ISSUER_ADDRESS
+      });
+
+      const xrpResult = await sendXRP(totalXRP);
+      console.log("XRP transaction result:", xrpResult);
 
       toast.success(
-        `✅ Successfully sent ${amount} ${fund.tokenSymbol} tokens`,
-        {
-          duration: 5000 // Show for 5 seconds
-        }
+        `Successfully invested in ${fund.symbol}! ${amount} tokens sent and ${totalXRP} XRP received.`
       );
-
       onClose();
-    } catch (error) {
-      console.error("Investment failed:", error);
-      toast.error(
-        error.message || "Failed to process investment. Please try again."
-      );
-      setError("Transaction failed");
+    } catch (err) {
+      console.error("Transaction error:", err);
+      const errorMessage = err.details || err.message || "Transaction failed";
+      setError(errorMessage);
+      toast.error(`Investment failed: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -140,7 +157,7 @@ export default function SendModal({ isOpen, onClose, symbol }) {
                     htmlFor="amount"
                     className="block text-lg font-medium text-gray-700 mb-2"
                   >
-                    Investment Amount
+                    Investment Amount (Number of Tokens)
                   </label>
                   <input
                     type="number"
@@ -154,9 +171,17 @@ export default function SendModal({ isOpen, onClose, symbol }) {
                   {error && (
                     <p className="mt-2 text-sm text-red-600">{error}</p>
                   )}
-                  <p className="mt-3 text-lg text-gray-500">
-                    Available # of Tokens: {fund.availableUnits}
-                  </p>
+                  <div className="mt-3 space-y-2">
+                    <p className="text-lg text-gray-500">
+                      Available # of Tokens: {fund.availableUnits}
+                    </p>
+                    <p className="text-lg text-gray-500">
+                      Token Price: {fund.tokenPrice} XRP per token
+                    </p>
+                    <p className="text-lg font-semibold text-blue-600">
+                      Total Cost: {totalXRP} XRP
+                    </p>
+                  </div>
                 </div>
 
                 <div className="mt-8 sm:mt-6 sm:flex sm:flex-row-reverse gap-3">

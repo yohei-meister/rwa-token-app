@@ -50,6 +50,9 @@ export default function FundDetail() {
         <p>
           <strong>Total AUM:</strong> {fund.totalAUM}
         </p>
+        <p>
+          <strong>Token Price:</strong> {fund.tokenPrice} XRP per token
+        </p>
       </div>
       <p className="text-gray-700 mb-8 text-lg">{fund.description}</p>
       <button

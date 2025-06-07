@@ -6,6 +6,7 @@ export const funds = [
     availableUnits: 100,
     totalAUM: "USD 50M",
     category: "Buyout",
+    tokenPrice: 0.5, // XRP per token
     description:
       "This fund focuses on acquiring majority stakes in mature companies."
   },
@@ -16,6 +17,7 @@ export const funds = [
     availableUnits: 50,
     totalAUM: "EUR 30M",
     category: "Growth Equity",
+    tokenPrice: 0.2, // XRP per token
     description:
       "This fund invests in high-growth companies seeking to expand their operations."
   },
@@ -26,6 +28,7 @@ export const funds = [
     availableUnits: 150,
     totalAUM: "GBP 25M",
     category: "Venture Capital",
+    tokenPrice: 0.3, // XRP per token
     description:
       "This fund focuses on early-stage technology companies with high potential."
   }
