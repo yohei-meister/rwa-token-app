@@ -19,7 +19,7 @@ export default function TokenCard({
             <span className="font-medium text-gray-900">{tokenPrice} XRP</span>
           </p>
           <p className="text-sm text-gray-500">
-            Available Units:{" "}
+            Available # of Tokens:{" "}
             <span className="font-medium text-gray-900">{availableUnits}</span>
           </p>
         </div>

@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { fundsBySymbol } from "../data/funds";
 import { handleInvestment } from "../utils/txHandler";
 import { useFund } from "../contexts/FundContext";
 
 export default function SendModal({ isOpen, onClose, symbol, fundId }) {
-  const fund = fundsBySymbol[symbol];
-  const { updateFundTokens } = useFund();
+  const { funds, updateFundTokens } = useFund();
+  const fund = funds.find((f) => f.symbol === symbol);
   const [amount, setAmount] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -72,7 +71,7 @@ export default function SendModal({ isOpen, onClose, symbol, fundId }) {
     setError(validateAmount(value));
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !fund) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();

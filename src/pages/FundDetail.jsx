@@ -1,46 +1,19 @@
-import { useState, useEffect } from "react";
+import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import SendModal from "../components/SendModal";
 import { toast } from "react-hot-toast";
 import { useFund } from "../contexts/FundContext";
-import { fundsBySymbol } from "../data/funds";
 
 export default function FundDetail() {
   const { symbol } = useParams();
   const navigate = useNavigate();
-  const { getFundById } = useFund();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [fund, setFund] = useState(null);
-
-  useEffect(() => {
-    const foundFund = fundsBySymbol[symbol];
-    if (!foundFund) {
-      toast.error("Fund not found");
-      navigate("/");
-      return;
-    }
-    setFund(foundFund);
-    setIsLoading(false);
-  }, [symbol, navigate]);
-
-  const handleTokenUpdate = (purchasedAmount) => {
-    console.log("Updating tokens:", purchasedAmount);
-    setFund((prevFund) => ({
-      ...prevFund,
-      availableUnits: prevFund.availableUnits - purchasedAmount
-    }));
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
+  const { funds } = useFund();
+  const fund = funds.find((f) => f.symbol === symbol);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   if (!fund) {
+    toast.error("Fund not found");
+    navigate("/");
     return null;
   }
 
