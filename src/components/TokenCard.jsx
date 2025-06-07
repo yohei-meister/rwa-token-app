@@ -15,7 +15,14 @@ export default function TokenCard({
       <div className="p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-2">{name}</h2>
         <p className="text-sm text-gray-500 mb-4">{symbol}</p>
-        <p className="text-gray-600 mb-4">{description}</p>
+        <p
+          className={`text-gray-600 mb-4 ${
+            showCategoryAUMOnly ? "line-clamp-3" : ""
+          }`}
+        >
+          {description}
+          {showCategoryAUMOnly && <span>...</span>}
+        </p>
         <div className="space-y-2">
           {showCategoryAUMOnly ? (
             <>
