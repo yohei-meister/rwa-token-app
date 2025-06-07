@@ -4,61 +4,27 @@ export default function TokenCard({
   name,
   symbol,
   description,
-  tokenPrice,
-  availableUnits,
   category,
-  totalAUM,
-  showCategoryAUMOnly
+  totalAUM
 }) {
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       <div className="p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-2">{name}</h2>
         <p className="text-sm text-gray-500 mb-4">{symbol}</p>
-        <p
-          className={`text-gray-600 mb-4 ${
-            showCategoryAUMOnly ? "line-clamp-3" : ""
-          }`}
-        >
+        <p className="text-gray-600 mb-4 line-clamp-3">
           {description}
-          {showCategoryAUMOnly && <span>...</span>}
+          <span>...</span>
         </p>
         <div className="space-y-2">
-          {showCategoryAUMOnly ? (
-            <>
-              <p className="text-sm text-gray-500">
-                Category:{" "}
-                <span className="font-medium text-gray-900">{category}</span>
-              </p>
-              <p className="text-sm text-gray-500">
-                Total AUM:{" "}
-                <span className="font-medium text-gray-900">{totalAUM}</span>
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="text-sm text-gray-500">
-                Token Price:{" "}
-                <span className="font-medium text-gray-900">
-                  {tokenPrice} XRP
-                </span>
-              </p>
-              <p className="text-sm text-gray-500">
-                Available Units:{" "}
-                <span className="font-medium text-gray-900">
-                  {availableUnits}
-                </span>
-              </p>
-              <p className="text-sm text-gray-500">
-                Category:{" "}
-                <span className="font-medium text-gray-900">{category}</span>
-              </p>
-              <p className="text-sm text-gray-500">
-                Total AUM:{" "}
-                <span className="font-medium text-gray-900">{totalAUM}</span>
-              </p>
-            </>
-          )}
+          <p className="text-sm text-gray-500">
+            Category:{" "}
+            <span className="font-medium text-gray-900">{category}</span>
+          </p>
+          <p className="text-sm text-gray-500">
+            Total AUM:{" "}
+            <span className="font-medium text-gray-900">{totalAUM}</span>
+          </p>
         </div>
         <Link
           to={`/funds/${symbol}`}
