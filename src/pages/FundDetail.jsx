@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import SendModal from "../components/SendModal";
 import { toast } from "react-hot-toast";
 import { useFund } from "../contexts/FundContext";
 import WalletConnect from "../components/WalletConnect";
+import WalletInfoModal from "../components/WalletInfoModal";
 
 export default function FundDetail() {
   const { symbol } = useParams();
@@ -11,6 +12,7 @@ export default function FundDetail() {
   const { funds } = useFund();
   const fund = funds.find((f) => f.symbol === symbol);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
   if (!fund) {
     toast.error("Fund not found");
@@ -20,6 +22,10 @@ export default function FundDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
+      <WalletInfoModal
+        isOpen={isWalletModalOpen}
+        onClose={() => setIsWalletModalOpen(false)}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top bar: Back to Home and WalletConnect */}
         <div className="flex justify-between items-center mb-6">
@@ -29,7 +35,7 @@ export default function FundDetail() {
           >
             &larr; Back to Home
           </button>
-          <WalletConnect />
+          <WalletConnect onAddressClick={() => setIsWalletModalOpen(true)} />
         </div>
         <div className="bg-white shadow rounded-lg overflow-hidden">
           <div className="px-4 py-5 sm:p-6">

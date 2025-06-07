@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 
 const xumm = new XummPkce(import.meta.env.VITE_XUMM_API_KEY);
 
-export default function WalletConnect() {
+export default function WalletConnect({ onAddressClick }) {
   const [address, setAddress] = useState("");
 
   // Initialize wallet state on component mount
@@ -59,7 +59,20 @@ export default function WalletConnect() {
       ) : (
         <div className="flex items-center gap-4">
           <div className="text-gray-800">
-            Connected Wallet: <strong>{address}</strong>
+            Connected Wallet:{" "}
+            <button
+              className="text-blue-600 underline break-all hover:text-blue-800 focus:outline-none"
+              onClick={() => onAddressClick && onAddressClick(address)}
+              style={{
+                cursor: "pointer",
+                background: "none",
+                border: "none",
+                padding: 0
+              }}
+              tabIndex={0}
+            >
+              <strong>{address}</strong>
+            </button>
           </div>
           <button
             onClick={handleLogout}
