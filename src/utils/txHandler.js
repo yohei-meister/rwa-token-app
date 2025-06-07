@@ -41,7 +41,8 @@ export async function handleInvestment({
 
     // Show success message
     toast.success(
-      `Successfully invested in ${fundSymbol}! ${amount} ${tokenSymbol} tokens received and ${totalXRP} XRP sent.`
+      `Successfully invested in ${fundSymbol}! ${amount} ${tokenSymbol} tokens received and ${totalXRP} XRP sent.`,
+      { duration: 5000 }
     );
 
     return {

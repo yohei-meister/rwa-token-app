@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import SendModal from "../components/SendModal";
 import { toast } from "react-hot-toast";
 import { useFund } from "../contexts/FundContext";
+import WalletConnect from "../components/WalletConnect";
 
 export default function FundDetail() {
   const { symbol } = useParams();
@@ -20,12 +21,16 @@ export default function FundDetail() {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <button
-          onClick={() => navigate("/")}
-          className="mb-6 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
-        >
-          &larr; Back to Home
-        </button>
+        {/* Top bar: Back to Home and WalletConnect */}
+        <div className="flex justify-between items-center mb-6">
+          <button
+            onClick={() => navigate("/")}
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
+          >
+            &larr; Back to Home
+          </button>
+          <WalletConnect />
+        </div>
         <div className="bg-white shadow rounded-lg overflow-hidden">
           <div className="px-4 py-5 sm:p-6">
             <div className="flex justify-between items-start">
