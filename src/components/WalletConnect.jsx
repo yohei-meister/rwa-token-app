@@ -24,6 +24,14 @@ export default function WalletConnect({ onAddressClick }) {
 
   const handleLogin = async () => {
     try {
+      // Force logout before connecting to ensure QR code scan
+      await xumm.logout();
+      // Clear any stored state
+      localStorage.removeItem("xumm-auth");
+      localStorage.removeItem("xumm-state");
+      setAddress("");
+
+      // Now authorize with fresh state
       await xumm.authorize();
       const state = await xumm.state();
       setAddress(state.me?.account);
@@ -36,6 +44,7 @@ export default function WalletConnect({ onAddressClick }) {
 
   const handleLogout = async () => {
     try {
+      await xumm.logout();
       // Clear the stored tokens and state
       localStorage.removeItem("xumm-auth");
       localStorage.removeItem("xumm-state");
