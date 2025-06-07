@@ -45,7 +45,7 @@ export default function FundDetail() {
           <strong>Category:</strong> {fund.category}
         </p>
         <p>
-          <strong>Available Units:</strong> {fund.availableUnits}
+          <strong>Available # of Tokens:</strong> {fund.availableUnits}
         </p>
         <p>
           <strong>Total AUM:</strong> {fund.totalAUM}

@@ -148,7 +148,7 @@ export default function SendModal({ isOpen, onClose, symbol }) {
                     Fixed amount: 10 XRP
                   </p>
                   <p className="mt-3 text-lg text-gray-500">
-                    Available units: {fund.availableUnits}
+                    Available # of Tokens: {fund.availableUnits}
                   </p>
                 </div>
 

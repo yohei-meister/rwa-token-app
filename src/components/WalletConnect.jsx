@@ -63,7 +63,7 @@ export default function WalletConnect() {
           </div>
           <button
             onClick={handleLogout}
-            className="bg-orange-600 text-white px-4 py-2 rounded hover:bg-red-700"
+            className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-red-700"
           >
             Disconnect Wallet
           </button>

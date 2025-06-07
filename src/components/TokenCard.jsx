@@ -7,7 +7,7 @@ export default function TokenCard({ name, symbol, availableUnits, totalAUM }) {
       <h2 className="text-2xl font-semibold text-gray-800 mb-1">{name}</h2>
       <p className="text-lg text-blue-500 mb-2">Symbol: {symbol}</p>
       <div className="flex flex-col text-lg text-gray-700 mb-3">
-        <span>Available Units: {availableUnits}</span>
+        <span>Available # of Tokens: {availableUnits}</span>
         <span>Total Fundraise Amount: ${totalAUM}</span>
       </div>
 
