@@ -1,21 +1,35 @@
 import { Link } from "react-router-dom";
 
-export default function TokenCard({ name, symbol, availableUnits, totalAUM }) {
+export default function TokenCard({
+  name,
+  symbol,
+  description,
+  tokenPrice,
+  availableUnits
+}) {
   return (
-
-    <div className="border rounded-2xl shadow-sm p-8 bg-white hover:shadow-md transition text-center">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-1">{name}</h2>
-      <p className="text-lg text-blue-500 mb-2">Symbol: {symbol}</p>
-      <div className="flex flex-col text-lg text-gray-700 mb-3">
-        <span>Available # of Tokens: {availableUnits}</span>
-        <span>Total Fundraise Amount: ${totalAUM}</span>
-      </div>
-
-      <Link to={`/funds/${symbol}`}>
-        <button className="w-2xs bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">
+    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">{name}</h2>
+        <p className="text-sm text-gray-500 mb-4">{symbol}</p>
+        <p className="text-gray-600 mb-4">{description}</p>
+        <div className="space-y-2">
+          <p className="text-sm text-gray-500">
+            Token Price:{" "}
+            <span className="font-medium text-gray-900">{tokenPrice} XRP</span>
+          </p>
+          <p className="text-sm text-gray-500">
+            Available Units:{" "}
+            <span className="font-medium text-gray-900">{availableUnits}</span>
+          </p>
+        </div>
+        <Link
+          to={`/funds/${symbol}`}
+          className="mt-4 block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
           View Details
-        </button>
-      </Link>
+        </Link>
+      </div>
     </div>
   );
 }

@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { fundsBySymbol } from "../data/funds";
-import toast from "react-hot-toast";
-import { sendToken, isTransactionSuccessful } from "../lib/xrpl/sendToken";
-import { sendXRP } from "../lib/xrpl/sendXRP";
+import { handleInvestment } from "../utils/txHandler";
+import { useFund } from "../contexts/FundContext";
 
-export default function SendModal({ isOpen, onClose, symbol }) {
+export default function SendModal({ isOpen, onClose, symbol, fundId }) {
   const fund = fundsBySymbol[symbol];
+  const { updateFundTokens } = useFund();
   const [amount, setAmount] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,6 +57,9 @@ export default function SendModal({ isOpen, onClose, symbol }) {
     if (isNaN(numValue) || numValue <= 0) {
       return "Please enter a valid number greater than 0";
     }
+    if (!Number.isInteger(numValue)) {
+      return "Please enter a whole number of tokens";
+    }
     if (numValue > fund.availableUnits) {
       return `Cannot exceed available units (${fund.availableUnits})`;
     }
@@ -77,36 +80,18 @@ export default function SendModal({ isOpen, onClose, symbol }) {
     setIsSubmitting(true);
 
     try {
-      // First send tokens from issuer to destination
-      console.log("Sending tokens:", {
-        symbol: fund.tokenSymbol,
-        amount: amount,
-        to: import.meta.env.VITE_XRPL_DESTINATION_ADDRESS
+      const result = await handleInvestment({
+        tokenSymbol: fund.tokenSymbol,
+        amount: Number(amount),
+        tokenPrice: fund.tokenPrice,
+        fundSymbol: fund.symbol
       });
 
-      const tokenResult = await sendToken(fund.tokenSymbol, amount);
-      console.log("Token transaction result:", tokenResult);
-
-      // Then send XRP from destination to issuer
-      const totalXRP = amount * fund.tokenPrice;
-      console.log("Sending XRP:", {
-        amount: totalXRP,
-        from: import.meta.env.VITE_XRPL_DESTINATION_ADDRESS,
-        to: import.meta.env.VITE_XRPL_ISSUER_ADDRESS
-      });
-
-      const xrpResult = await sendXRP(totalXRP);
-      console.log("XRP transaction result:", xrpResult);
-
-      toast.success(
-        `Successfully invested in ${fund.symbol}! ${amount} tokens sent and ${totalXRP} XRP received.`
-      );
+      // Update available tokens
+      updateFundTokens(fundId, result.tokenAmount);
       onClose();
     } catch (err) {
-      console.error("Transaction error:", err);
-      const errorMessage = err.details || err.message || "Transaction failed";
-      setError(errorMessage);
-      toast.error(`Investment failed: ${errorMessage}`);
+      setError(err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -157,13 +142,15 @@ export default function SendModal({ isOpen, onClose, symbol }) {
                     htmlFor="amount"
                     className="block text-lg font-medium text-gray-700 mb-2"
                   >
-                    Investment Amount (Number of Tokens)
+                    # of Tokens
                   </label>
                   <input
                     type="number"
                     id="amount"
                     value={amount}
                     onChange={handleAmountChange}
+                    min="1"
+                    step="1"
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-lg"
                     placeholder="Enter amount"
                     disabled={isSubmitting}

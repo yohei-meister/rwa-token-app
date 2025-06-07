@@ -1,26 +1,43 @@
-import { useState } from "react";
-import "./App.css";
-import React from "react";
-import TokenCard from "./components/TokenCard";
-import WalletConnect from "./components/WalletConnect";
-import { funds } from "./data/funds";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+import Home from "./pages/Home";
+import FundDetail from "./pages/FundDetail";
+import { FundProvider } from "./contexts/FundContext";
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100 p-16">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-16">
-          <h1 className="text-3xl font-bold">Available Fund Tokens</h1>
-          <WalletConnect />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {funds.map((token) => (
-            <TokenCard key={token.symbol} {...token} />
-          ))}
-        </div>
-      </div>
-    </div>
+    <Router>
+      <FundProvider>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              fontSize: "1.1rem",
+              padding: "1rem",
+              background: "#ffffff",
+              color: "#333333"
+            },
+            success: {
+              iconTheme: {
+                primary: "#059669",
+                secondary: "#ffffff"
+              }
+            },
+            error: {
+              iconTheme: {
+                primary: "#dc2626",
+                secondary: "#ffffff"
+              }
+            }
+          }}
+        />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/funds/:symbol" element={<FundDetail />} />
+        </Routes>
+      </FundProvider>
+    </Router>
   );
 }
 

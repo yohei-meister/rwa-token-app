@@ -43,7 +43,7 @@ export async function sendToken(symbol, amount) {
       Destination: destinationAddress,
       Amount: {
         currency: symbol,
-        value: amount,
+        value: String(amount),
         issuer: issuerAddress
       }
     };
