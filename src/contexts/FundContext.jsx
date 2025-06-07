@@ -6,10 +6,10 @@ const FundContext = createContext(null);
 export function FundProvider({ children }) {
   const [fundsData, setFundsData] = useState(funds);
 
-  const updateFundTokens = useCallback((fundId, purchasedAmount) => {
+  const updateFundTokens = useCallback((fundSymbol, purchasedAmount) => {
     setFundsData((prevFunds) =>
       prevFunds.map((fund) =>
-        fund.id === fundId
+        fund.symbol === fundSymbol
           ? { ...fund, availableUnits: fund.availableUnits - purchasedAmount }
           : fund
       )

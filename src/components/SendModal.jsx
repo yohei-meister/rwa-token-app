@@ -87,7 +87,7 @@ export default function SendModal({ isOpen, onClose, symbol, fundId }) {
       });
 
       // Update available tokens
-      updateFundTokens(fundId, result.tokenAmount);
+      updateFundTokens(fund.symbol, result.tokenAmount);
       onClose();
     } catch (err) {
       setError(err.message);
