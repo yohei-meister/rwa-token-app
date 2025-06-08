@@ -49,6 +49,9 @@ cp .env.sample .env
 npm run dev
 ```
 
+## 🔒 Environment File Security
+The .env file is meant to contain sensitive credentials and is listed in .gitignore.
+
 ## 📝 Note
 
 This project uses XRPL Testnet.
