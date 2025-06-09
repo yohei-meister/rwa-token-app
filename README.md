@@ -18,8 +18,8 @@ A proof-of-concept DApp for investing in tokenized private equity funds on the X
 - React + Vite
 - Tailwind CSS
 - XRPL (xrpl.js)
-- XAMAN OAuth2 PKCE
-- .env-based configuration
+- XUMM OAuth2 PKCE
+- .env-based configuration (for XRPL testnet credentials)
 
 ## ⚙️ How to Run Locally
 
@@ -36,21 +36,20 @@ cd rwa-token-app
 npm install
 ```
 
-3. Set up environment variables
+3. Set up XRPL testnet credentials
 
 ```bash
-# Create a .env file based on .env.sample
-cp .env.sample .env
+# Copy the testnet credentials from .env.local.public to .env
+cp .env.local.public .env
 ```
+
+> **Note**: This app uses XRPL testnet accounts for token operations because XAMAN wallets cannot handle testnet tokens. The credentials in `.env.local.public` are pre-configured testnet accounts that you can use for testing the application.
 
 4. Start the development server
 
 ```bash
 npm run dev
 ```
-
-## 🔒 Environment File Security
-The .env file is meant to contain sensitive credentials and is listed in .gitignore.
 
 ## 📝 Note
 
