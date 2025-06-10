@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 // Using a public API key for XUMM OAuth2
 const xumm = new XummPkce("11757c9e-b76d-46b4-9a5f-f4b51c97bbdd");
 
-export default function WalletConnect({ onAddressClick }) {
+export default function WalletConnect({ onAddressClick, onConnectionChange }) {
   const [address, setAddress] = useState("");
 
   // Initialize wallet state on component mount
@@ -15,13 +15,17 @@ export default function WalletConnect({ onAddressClick }) {
         const state = await xumm.state();
         if (state.me?.account) {
           setAddress(state.me.account);
+          onConnectionChange?.(true);
+        } else {
+          onConnectionChange?.(false);
         }
       } catch (error) {
         console.error("Error initializing wallet:", error);
+        onConnectionChange?.(false);
       }
     };
     initWallet();
-  }, []);
+  }, [onConnectionChange]);
 
   const handleLogin = async () => {
     try {
@@ -31,15 +35,18 @@ export default function WalletConnect({ onAddressClick }) {
       localStorage.removeItem("xumm-auth");
       localStorage.removeItem("xumm-state");
       setAddress("");
+      onConnectionChange?.(false);
 
       // Now authorize with fresh state
       await xumm.authorize();
       const state = await xumm.state();
       setAddress(state.me?.account);
+      onConnectionChange?.(true);
       toast.success(`Wallet connected: ${state.me?.account}`);
     } catch (error) {
       console.error("Error connecting wallet:", error);
       toast.error("Failed to connect wallet");
+      onConnectionChange?.(false);
     }
   };
 
@@ -50,6 +57,7 @@ export default function WalletConnect({ onAddressClick }) {
       localStorage.removeItem("xumm-auth");
       localStorage.removeItem("xumm-state");
       setAddress("");
+      onConnectionChange?.(false);
       toast.success("Wallet disconnected");
     } catch (error) {
       console.error("Error disconnecting wallet:", error);

@@ -1,12 +1,21 @@
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export default function TokenCard({
   name,
   symbol,
   description,
   category,
-  totalAUM
+  totalAUM,
+  isWalletConnected
 }) {
+  const handleViewDetails = (e) => {
+    if (!isWalletConnected) {
+      e.preventDefault();
+      toast.error("Please connect your wallet to view fund details");
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       <div className="p-6">
@@ -28,6 +37,7 @@ export default function TokenCard({
         </div>
         <Link
           to={`/funds/${symbol}`}
+          onClick={handleViewDetails}
           className="mt-4 block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           View Details
