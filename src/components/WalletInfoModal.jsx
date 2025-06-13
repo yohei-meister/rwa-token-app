@@ -2,17 +2,18 @@ import React, { useEffect, useState } from "react";
 import { useFund } from "../contexts/FundContext";
 import { useXRPLClient } from "../hooks/useXRPLClient";
 import { getAccountBalances } from "../utils/xrplTransactions";
+import toast from "react-hot-toast";
 
 export default function WalletInfoModal({ isOpen, onClose }) {
   const { funds } = useFund();
-  const { client, connect, disconnect } = useXRPLClient();
+  const { client } = useXRPLClient();
   const [xrpBalance, setXrpBalance] = useState(null);
   const [tokenBalances, setTokenBalances] = useState({});
   const [loading, setLoading] = useState(false);
   const destinationAddress = import.meta.env.VITE_XRPL_DESTINATION_ADDRESS;
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !client || !destinationAddress) return;
 
     const fetchBalances = async () => {
       setLoading(true);
@@ -20,31 +21,32 @@ export default function WalletInfoModal({ isOpen, onClose }) {
       setTokenBalances({});
 
       try {
-        await connect();
+        if (client.connect) await client.connect();
         const { xrpBalance, tokenBalances: lines } = await getAccountBalances(
           client,
           destinationAddress
         );
-
-        setXrpBalance(xrpBalance.toFixed(6));
-
+        setXrpBalance(Number(xrpBalance).toFixed(6));
         const balances = {};
         for (const fund of funds) {
           const line = lines.find((l) => l.currency === fund.tokenSymbol);
-          balances[fund.tokenSymbol] = line ? line.balance : "0";
+          balances[fund.tokenSymbol] = line
+            ? Math.floor(Number(line.balance)).toString()
+            : "0";
         }
         setTokenBalances(balances);
       } catch (error) {
         setXrpBalance("Error");
         setTokenBalances({});
+        toast.error("Failed to fetch wallet balances");
       } finally {
         setLoading(false);
-        await disconnect();
+        if (client.disconnect) await client.disconnect();
       }
     };
 
     fetchBalances();
-  }, [isOpen, client, connect, disconnect, destinationAddress, funds]);
+  }, [isOpen, client, destinationAddress, funds]);
 
   if (!isOpen) return null;
 
@@ -80,10 +82,10 @@ export default function WalletInfoModal({ isOpen, onClose }) {
           <div className="text-lg font-semibold">XRP Balance</div>
           <div className="text-2xl text-blue-700 font-bold">
             {loading
-              ? "..."
+              ? "Fetching Balance..."
               : xrpBalance !== null
               ? `${xrpBalance} XRP`
-              : "..."}
+              : "Fetching Balance..."}
           </div>
         </div>
         <div>
@@ -93,7 +95,9 @@ export default function WalletInfoModal({ isOpen, onClose }) {
               <li key={fund.symbol} className="flex justify-between py-1">
                 <span>{fund.symbol}</span>
                 <span className="font-mono">
-                  {loading ? "..." : tokenBalances[fund.tokenSymbol] ?? "0"}
+                  {loading
+                    ? "Fetching Balance..."
+                    : tokenBalances[fund.tokenSymbol] ?? "0"}
                 </span>
               </li>
             ))}
