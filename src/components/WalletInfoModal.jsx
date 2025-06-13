@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useFund } from "../contexts/FundContext";
-import { Client } from "xrpl";
-
-const TESTNET_URL = "wss://s.altnet.rippletest.net:51233";
+import { useXRPLClient } from "../hooks/useXRPLClient";
+import { getAccountBalances } from "../utils/xrplTransactions";
 
 export default function WalletInfoModal({ isOpen, onClose }) {
   const { funds } = useFund();
+  const { client, connect, disconnect } = useXRPLClient();
   const [xrpBalance, setXrpBalance] = useState(null);
   const [tokenBalances, setTokenBalances] = useState({});
   const [loading, setLoading] = useState(false);
@@ -13,53 +13,38 @@ export default function WalletInfoModal({ isOpen, onClose }) {
 
   useEffect(() => {
     if (!isOpen) return;
-    let client;
-    setLoading(true);
-    setXrpBalance(null);
-    setTokenBalances({});
 
-    async function fetchBalances() {
+    const fetchBalances = async () => {
+      setLoading(true);
+      setXrpBalance(null);
+      setTokenBalances({});
+
       try {
-        client = new Client(TESTNET_URL);
-        await client.connect();
-        // Fetch XRP balance
-        const accountInfo = await client.request({
-          command: "account_info",
-          account: destinationAddress,
-          ledger_index: "validated"
-        });
-        setXrpBalance(
-          (Number(accountInfo.result.account_data.Balance) / 1_000_000).toFixed(
-            6
-          )
+        await connect();
+        const { xrpBalance, tokenBalances: lines } = await getAccountBalances(
+          client,
+          destinationAddress
         );
-        // Fetch token balances
-        const lines = await client.request({
-          command: "account_lines",
-          account: destinationAddress
-        });
+
+        setXrpBalance(xrpBalance.toFixed(6));
+
         const balances = {};
         for (const fund of funds) {
-          const line = lines.result.lines.find(
-            (l) => l.currency === fund.tokenSymbol
-          );
+          const line = lines.find((l) => l.currency === fund.tokenSymbol);
           balances[fund.tokenSymbol] = line ? line.balance : "0";
         }
         setTokenBalances(balances);
-      } catch (e) {
+      } catch (error) {
         setXrpBalance("Error");
         setTokenBalances({});
       } finally {
         setLoading(false);
-        if (client && client.isConnected()) await client.disconnect();
+        await disconnect();
       }
-    }
-    fetchBalances();
-    // Cleanup on close
-    return () => {
-      if (client && client.isConnected()) client.disconnect();
     };
-  }, [isOpen, destinationAddress, funds]);
+
+    fetchBalances();
+  }, [isOpen, client, connect, disconnect, destinationAddress, funds]);
 
   if (!isOpen) return null;
 

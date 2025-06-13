@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
-import { handleInvestment } from "../utils/txHandler";
 import { useFund } from "../contexts/FundContext";
+import { useXRPLClient } from "../hooks/useXRPLClient";
+import {
+  sendTokenTransaction,
+  sendXRPTransaction
+} from "../utils/xrplTransactions";
+import toast from "react-hot-toast";
 
 export default function SendModal({ isOpen, onClose, symbol, fundId }) {
   const { funds, updateFundTokens } = useFund();
+  const { client, connect, disconnect } = useXRPLClient();
   const fund = funds.find((f) => f.symbol === symbol);
   const [amount, setAmount] = useState("");
   const [error, setError] = useState("");
@@ -14,7 +20,7 @@ export default function SendModal({ isOpen, onClose, symbol, fundId }) {
     ? (Number(amount) * fund.tokenPrice).toFixed(2)
     : "0.00";
 
-  // ESCキーでモーダルを閉じる
+  // Handle ESC key to close modal
   useEffect(() => {
     const handleEsc = (event) => {
       if (event.key === "Escape") {
@@ -27,7 +33,7 @@ export default function SendModal({ isOpen, onClose, symbol, fundId }) {
     };
   }, [onClose]);
 
-  // モーダルが開いているときは背景のスクロールを無効にする
+  // Disable background scroll when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -39,7 +45,7 @@ export default function SendModal({ isOpen, onClose, symbol, fundId }) {
     };
   }, [isOpen]);
 
-  // モーダルが開かれるたびにフォームをリセット
+  // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
       setAmount("");
@@ -79,57 +85,49 @@ export default function SendModal({ isOpen, onClose, symbol, fundId }) {
     setIsSubmitting(true);
 
     try {
-      const result = await handleInvestment({
-        tokenSymbol: fund.tokenSymbol,
+      await connect();
+
+      // Send tokens from issuer to destination
+      await sendTokenTransaction(client, {
+        symbol: fund.tokenSymbol,
         amount: Number(amount),
-        tokenPrice: fund.tokenPrice,
-        fundSymbol: fund.symbol
+        issuerAddress: import.meta.env.VITE_XRPL_ISSUER_ADDRESS,
+        issuerSecret: import.meta.env.VITE_XRPL_ISSUER_SECRET,
+        destinationAddress: import.meta.env.VITE_XRPL_DESTINATION_ADDRESS
+      });
+
+      // Send XRP from destination to issuer
+      await sendXRPTransaction(client, {
+        amount: Number(totalXRP),
+        destinationAddress: import.meta.env.VITE_XRPL_DESTINATION_ADDRESS,
+        destinationSecret: import.meta.env.VITE_XRPL_DESTINATION_SECRET,
+        issuerAddress: import.meta.env.VITE_XRPL_ISSUER_ADDRESS
       });
 
       // Update available tokens
-      updateFundTokens(fund.symbol, result.tokenAmount);
+      updateFundTokens(fund.symbol, Number(amount));
+      toast.success(
+        `Successfully invested in ${fund.symbol}! ${amount} ${fund.tokenSymbol} tokens received and ${totalXRP} XRP sent.`,
+        { duration: 5000 }
+      );
       onClose();
     } catch (err) {
       setError(err.message);
+      toast.error(`Investment failed: ${err.message}`);
     } finally {
       setIsSubmitting(false);
+      await disconnect();
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop with blur effect */}
       <div
         className="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
-
-      {/* Modal */}
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative transform overflow-hidden rounded-lg bg-white px-6 pb-6 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-xl sm:p-8">
-          {/* Close button */}
-          <button
-            onClick={onClose}
-            className="absolute right-6 top-6 text-gray-400 hover:text-gray-500"
-            disabled={isSubmitting}
-          >
-            <span className="sr-only">Close</span>
-            <svg
-              className="h-8 w-8"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-
-          {/* Content */}
+      <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
           <div className="sm:flex sm:items-start">
             <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
               <h3 className="text-2xl font-semibold leading-6 text-gray-900 mb-6">
@@ -169,44 +167,13 @@ export default function SendModal({ isOpen, onClose, symbol, fundId }) {
                     </p>
                   </div>
                 </div>
-
-                <div className="mt-8 sm:mt-6 sm:flex sm:flex-row-reverse gap-3">
+                <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                   <button
                     type="submit"
-                    className={`inline-flex w-full justify-center rounded-md px-5 py-3 text-lg font-semibold text-white shadow-sm sm:w-auto ${
-                      isSubmitting
-                        ? "bg-blue-400 cursor-not-allowed"
-                        : "bg-blue-600 hover:bg-blue-500"
-                    }`}
-                    disabled={isSubmitting || error}
+                    className="inline-flex w-full justify-center rounded-md bg-blue-600 px-5 py-3 text-lg font-semibold text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:ml-3 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isSubmitting || !!error}
                   >
-                    {isSubmitting ? (
-                      <span className="inline-flex items-center">
-                        <svg
-                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        Processing...
-                      </span>
-                    ) : (
-                      "Confirm Investment"
-                    )}
+                    {isSubmitting ? "Processing..." : "Confirm Investment"}
                   </button>
                   <button
                     type="button"
