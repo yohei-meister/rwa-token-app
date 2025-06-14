@@ -14,6 +14,22 @@ export default function FundDetail() {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
+  // Handle wallet disconnect and redirect to Home
+  const handleDisconnect = () => {
+    navigate("/");
+    //after redirecting to home I want to disconnect from wallet automatically
+    // Delay the disconnect to ensure navigation completes first
+    setTimeout(() => {
+      const walletConnect = document.querySelector(
+        'button[class*="bg-orange-500"]'
+      );
+      if (walletConnect) {
+        walletConnect.click();
+        toast.dismiss(); // Dismiss any existing toasts
+      }
+    }, 100);
+  };
+
   if (!fund) {
     toast.error("Fund not found");
     navigate("/");
@@ -35,7 +51,10 @@ export default function FundDetail() {
           >
             &larr; Back to Home
           </button>
-          <WalletConnect onAddressClick={() => setIsWalletModalOpen(true)} />
+          <WalletConnect
+            onAddressClick={() => setIsWalletModalOpen(true)}
+            onDisconnect={handleDisconnect}
+          />
         </div>
         <div className="bg-white shadow rounded-lg overflow-hidden">
           <div className="px-4 py-5 sm:p-6">

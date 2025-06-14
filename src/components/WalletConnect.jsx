@@ -2,13 +2,23 @@ import { useWallet } from "../hooks/useWallet";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 
-export default function WalletConnect({ onAddressClick, onConnectionChange }) {
+export default function WalletConnect({
+  onAddressClick,
+  onConnectionChange,
+  onDisconnect
+}) {
   const { address, isConnected, connect, disconnect } = useWallet();
 
   // Notify parent component of connection changes
   useEffect(() => {
     onConnectionChange?.(isConnected);
   }, [isConnected, onConnectionChange]);
+
+  const handleDisconnect = async () => {
+    await disconnect();
+    onConnectionChange?.(false);
+    if (onDisconnect) onDisconnect();
+  };
 
   return (
     <div>
@@ -38,7 +48,7 @@ export default function WalletConnect({ onAddressClick, onConnectionChange }) {
             </button>
           </div>
           <button
-            onClick={disconnect}
+            onClick={handleDisconnect}
             className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-red-700"
           >
             Disconnect Wallet
