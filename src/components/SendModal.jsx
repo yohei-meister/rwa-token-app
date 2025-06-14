@@ -7,7 +7,7 @@ import {
 } from "../utils/xrplTransactions";
 import toast from "react-hot-toast";
 
-export default function SendModal({ isOpen, onClose, symbol, fundId }) {
+export default function SendModal({ isOpen, onClose, symbol }) {
   const { funds, updateFundTokens } = useFund();
   const { client, connect, disconnect } = useXRPLClient();
   const fund = funds.find((f) => f.symbol === symbol);

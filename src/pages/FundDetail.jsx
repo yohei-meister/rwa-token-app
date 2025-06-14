@@ -17,15 +17,13 @@ export default function FundDetail() {
   // Handle wallet disconnect and redirect to Home
   const handleDisconnect = () => {
     navigate("/");
-    //after redirecting to home I want to disconnect from wallet automatically
-    // Delay the disconnect to ensure navigation completes first
     setTimeout(() => {
       const walletConnect = document.querySelector(
         'button[class*="bg-orange-500"]'
       );
       if (walletConnect) {
         walletConnect.click();
-        toast.dismiss(); // Dismiss any existing toasts
+        toast.dismiss();
       }
     }, 100);
   };
@@ -44,17 +42,21 @@ export default function FundDetail() {
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top bar: Back to Home and WalletConnect */}
-        <div className="flex justify-between items-center mb-6">
-          <button
-            onClick={() => navigate("/")}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
-          >
-            &larr; Back to Home
-          </button>
-          <WalletConnect
-            onAddressClick={() => setIsWalletModalOpen(true)}
-            onDisconnect={handleDisconnect}
-          />
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+          <div className="w-full sm:w-auto">
+            <button
+              onClick={() => navigate("/")}
+              className="w-full sm:w-auto px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
+            >
+              &larr; Back to Home
+            </button>
+          </div>
+          <div className="w-full sm:w-auto">
+            <WalletConnect
+              onAddressClick={() => setIsWalletModalOpen(true)}
+              onDisconnect={handleDisconnect}
+            />
+          </div>
         </div>
         <div className="bg-white shadow rounded-lg overflow-hidden">
           <div className="px-4 py-5 sm:p-6">

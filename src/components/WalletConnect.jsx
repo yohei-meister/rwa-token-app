@@ -21,17 +21,17 @@ export default function WalletConnect({
   };
 
   return (
-    <div>
+    <div className="w-full">
       {!address ? (
         <button
           onClick={connect}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
         >
           Connect Wallet
         </button>
       ) : (
-        <div className="flex items-center gap-4">
-          <div className="text-gray-800">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="text-gray-800 w-full sm:w-auto">
             Connected Wallet:{" "}
             <button
               className="text-blue-600 underline break-all hover:text-blue-800 focus:outline-none"
@@ -49,7 +49,7 @@ export default function WalletConnect({
           </div>
           <button
             onClick={handleDisconnect}
-            className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-red-700"
+            className="w-full sm:w-auto bg-orange-500 text-white px-4 py-2 rounded hover:bg-red-700"
           >
             Disconnect Wallet
           </button>

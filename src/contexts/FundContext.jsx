@@ -16,17 +16,9 @@ export function FundProvider({ children }) {
     );
   }, []);
 
-  const getFundById = useCallback(
-    (id) => {
-      return fundsData.find((fund) => fund.id === parseInt(id));
-    },
-    [fundsData]
-  );
-
   const value = {
     funds: fundsData,
-    updateFundTokens,
-    getFundById
+    updateFundTokens
   };
 
   return <FundContext.Provider value={value}>{children}</FundContext.Provider>;
