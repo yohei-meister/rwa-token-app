@@ -44,18 +44,25 @@ cp .env.local.public .env
 ```
 
 > **Note**: This app uses:
+>
 > - XRPL testnet accounts for token operations (because XAMAN wallets cannot handle testnet tokens)
-> - A demo XUMM API key for wallet connection
-> 
+> - A demo XAMAN API key for wallet connection
+>
 > The credentials in `.env.local.public` are pre-configured for testing the application. For production use, you should:
-> - Create your own XRPL testnet accounts
-> - Get your own XUMM API key from the [XUMM Developer Portal](https://apps.xumm.dev/)
+>
+
 
 4. Start the development server
 
 ```bash
 npm run dev
 ```
+
+> **Important**: This demo app only works with the development server at `http://localhost:5173/`. This is because the XUMM API key is registered only for this URL in the XAMAN developer portal. If you need to use a different URL, you'll need to:
+>
+> 1. Get your own XAMAN API key from the [XAMAN Developer Portal](https://apps.xaman.dev/)
+> 2. Register your desired URL in the XAMAN developer portal
+> 3. Update the API key in your `.env` file
 
 ## 📝 Note
 
