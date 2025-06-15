@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { XummPkce } from "xumm-oauth2-pkce";
 import toast from "react-hot-toast";
 
-const xumm = new XummPkce("11757c9e-b76d-46b4-9a5f-f4b51c97bbdd");
+const xumm = new XummPkce(import.meta.env.VITE_XUMM_API_KEY);
 
 export function useWallet() {
   const [address, setAddress] = useState("");

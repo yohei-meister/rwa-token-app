@@ -36,14 +36,20 @@ cd rwa-token-app
 npm install
 ```
 
-3. Set up XRPL testnet credentials
+3. Set up environment variables
 
 ```bash
-# Copy the testnet credentials from .env.local.public to .env
+# Copy the testnet credentials and XUMM API key from .env.local.public to .env
 cp .env.local.public .env
 ```
 
-> **Note**: This app uses XRPL testnet accounts for token operations because XAMAN wallets cannot handle testnet tokens. The credentials in `.env.local.public` are pre-configured testnet accounts that you can use for testing the application.
+> **Note**: This app uses:
+> - XRPL testnet accounts for token operations (because XAMAN wallets cannot handle testnet tokens)
+> - A demo XUMM API key for wallet connection
+> 
+> The credentials in `.env.local.public` are pre-configured for testing the application. For production use, you should:
+> - Create your own XRPL testnet accounts
+> - Get your own XUMM API key from the [XUMM Developer Portal](https://apps.xumm.dev/)
 
 4. Start the development server
 
