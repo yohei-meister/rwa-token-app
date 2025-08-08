@@ -18,10 +18,13 @@ export function useWallet() {
     const initWallet = async () => {
       try {
         const state = await xumm.state();
-        if (state.me?.account) {
+        console.log("XUMM state:", state); // デバッグ用
+
+        if (state && state.me?.account) {
           setAddress(state.me.account);
           setIsConnected(true);
         } else {
+          console.log("No active XUMM session found");
           setIsConnected(false);
         }
       } catch (error) {
@@ -34,6 +37,7 @@ export function useWallet() {
 
   const connect = async () => {
     try {
+      console.log("Starting XUMM authorization...");
       await xumm.logout();
       localStorage.removeItem("xumm-auth");
       localStorage.removeItem("xumm-state");
@@ -42,9 +46,17 @@ export function useWallet() {
 
       await xumm.authorize();
       const state = await xumm.state();
-      setAddress(state.me?.account);
-      setIsConnected(true);
-      toast.success(`Wallet connected: ${state.me?.account}`);
+      console.log("Authorization completed, state:", state);
+
+      if (state && state.me?.account) {
+        setAddress(state.me.account);
+        setIsConnected(true);
+        toast.success(`Wallet connected: ${state.me.account}`);
+      } else {
+        throw new Error(
+          "Failed to get account information after authorization"
+        );
+      }
     } catch (error) {
       console.error("Error connecting wallet:", error);
       toast.error("Failed to connect wallet");
