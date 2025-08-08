@@ -38,13 +38,19 @@ export function useWallet() {
   const connect = async () => {
     try {
       console.log("Starting XUMM authorization...");
+      console.log("Current URL:", window.location.href);
+      console.log("Redirect URI:", import.meta.env.VITE_XUMM_REDIRECT_URL);
+
       await xumm.logout();
       localStorage.removeItem("xumm-auth");
       localStorage.removeItem("xumm-state");
       setAddress("");
       setIsConnected(false);
 
+      console.log("About to call xumm.authorize()...");
       await xumm.authorize();
+      console.log("xumm.authorize() completed");
+
       const state = await xumm.state();
       console.log("Authorization completed, state:", state);
 
@@ -59,6 +65,11 @@ export function useWallet() {
       }
     } catch (error) {
       console.error("Error connecting wallet:", error);
+      console.error("Error details:", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
       toast.error("Failed to connect wallet");
       setIsConnected(false);
     }
