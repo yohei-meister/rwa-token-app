@@ -2,7 +2,13 @@ import { useState, useEffect } from "react";
 import { XummPkce } from "xumm-oauth2-pkce";
 import toast from "react-hot-toast";
 
-const xumm = new XummPkce(import.meta.env.VITE_XUMM_API_KEY);
+// デバッグ用: 環境変数の確認
+console.log("VITE_XUMM_API_KEY:", import.meta.env.VITE_XUMM_API_KEY);
+console.log("VITE_XUMM_REDIRECT_URL:", import.meta.env.VITE_XUMM_REDIRECT_URL);
+
+const xumm = new XummPkce(import.meta.env.VITE_XUMM_API_KEY, {
+  redirectUri: import.meta.env.VITE_XUMM_REDIRECT_URL
+});
 
 export function useWallet() {
   const [address, setAddress] = useState("");
