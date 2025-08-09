@@ -5,10 +5,25 @@ import toast from "react-hot-toast";
 // デバッグ用: 環境変数の確認
 console.log("VITE_XUMM_API_KEY:", import.meta.env.VITE_XUMM_API_KEY);
 console.log("VITE_XUMM_REDIRECT_URL:", import.meta.env.VITE_XUMM_REDIRECT_URL);
+console.log("Environment:", import.meta.env.MODE);
+console.log("All env vars:", import.meta.env);
 
-const xumm = new XummPkce(import.meta.env.VITE_XUMM_API_KEY, {
-  redirectUri: import.meta.env.VITE_XUMM_REDIRECT_URL
-});
+// XUMMインスタンスを動的に作成する関数
+const createXummInstance = () => {
+  const apiKey = import.meta.env.VITE_XUMM_API_KEY;
+  const redirectUri = import.meta.env.VITE_XUMM_REDIRECT_URL;
+  
+  console.log("Creating XUMM instance with:", { apiKey, redirectUri });
+  
+  if (!apiKey) {
+    throw new Error("VITE_XUMM_API_KEY is not defined");
+  }
+  if (!redirectUri) {
+    throw new Error("VITE_XUMM_REDIRECT_URL is not defined");
+  }
+  
+  return new XummPkce(apiKey, { redirectUri });
+};
 
 export function useWallet() {
   const [address, setAddress] = useState("");
@@ -17,6 +32,7 @@ export function useWallet() {
   useEffect(() => {
     const initWallet = async () => {
       try {
+        const xumm = createXummInstance();
         const state = await xumm.state();
         console.log("XUMM state:", state); // デバッグ用
 
@@ -37,6 +53,7 @@ export function useWallet() {
 
   const connect = async () => {
     try {
+      const xumm = createXummInstance();
       console.log("Starting XUMM authorization...");
       console.log("Current URL:", window.location.href);
       console.log("Redirect URI:", import.meta.env.VITE_XUMM_REDIRECT_URL);
@@ -77,6 +94,7 @@ export function useWallet() {
 
   const disconnect = async () => {
     try {
+      const xumm = createXummInstance();
       await xumm.logout();
       localStorage.removeItem("xumm-auth");
       localStorage.removeItem("xumm-state");
