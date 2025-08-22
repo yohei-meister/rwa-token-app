@@ -64,6 +64,27 @@ npm run dev
 > 2. Register your desired URL in the XAMAN developer portal
 > 3. Update the API key in your `.env` file
 
+## ⚙️ How to Run Locally (Docker)
+
+1. **Clone the repository**
+
+```bash
+git clone https://github.com/yohei-meister/rwa-token-app
+cd rwa-token-app
+```
+
+2. **Start the development server with Docker Compose**
+
+```bash
+docker compose up --build
+```
+
+3. **Stop the server**
+
+```bash
+docker compose down
+```
+
 ## 📝 Note
 
 This project uses XRPL Testnet.
