@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { useCredentialCreate } from "@/hooks/useCredentialCreate";
 import { useCredentialCheck } from "@/hooks/useCredentialCheck";
 import { useCredentialDelete } from "@/hooks/useCredentialDelete";
+import { useCredentialAccept } from "@/hooks/useCredentialAccept";
 import { useWalletStore } from "@/stores/walletStore";
 
 export default function DemoContainer() {
@@ -38,6 +39,15 @@ export default function DemoContainer() {
     data: deleteData,
     error: deleteError,
   } = useCredentialDelete();
+  
+  const {
+    mutate: acceptCredential,
+    isPending: isAcceptPending,
+    isSuccess: isAcceptSuccess,
+    isError: isAcceptError,
+    data: acceptData,
+    error: acceptError,
+  } = useCredentialAccept();
   const { selectedUser, isConnected } = useWalletStore();
   const [credentialType, setCredentialType] = useState("KYC");
   const [subjectAddress, setSubjectAddress] = useState("");
@@ -73,7 +83,26 @@ export default function DemoContainer() {
     deleteCredential({
       input: {
         Issuer: issuerAddress || selectedUser.address,
-        Subject: selectedUser.address, // 本人が削除主体
+        Subject: subjectAddress || selectedUser.address,
+        CredentialType: credentialType,
+      },
+    });
+  };
+
+  const handleAcceptCredential = () => {
+    if (!isConnected || !selectedUser) {
+      alert("Please connect a wallet first");
+      return;
+    }
+
+    if (!issuerAddress) {
+      alert("Please enter issuer address to accept credential");
+      return;
+    }
+
+    acceptCredential({
+      input: {
+        Issuer: issuerAddress,
         CredentialType: credentialType,
       },
     });
@@ -85,10 +114,10 @@ export default function DemoContainer() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Wallet className="h-5 w-5" />
-            XRPL Credential Create Demo
+            XRPL Credential Management Demo
           </CardTitle>
           <CardDescription>
-            Create and manage credentials on the XRPL network
+            Create, accept, and delete credentials on the XRPL network
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -156,7 +185,7 @@ export default function DemoContainer() {
             </div>
 
             <div>
-              <Label htmlFor={issuerAddressId}>Issuer Address (for Delete)</Label>
+              <Label htmlFor={issuerAddressId}>Issuer Address</Label>
               <Input
                 id={issuerAddressId}
                 type="text"
@@ -164,19 +193,19 @@ export default function DemoContainer() {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setIssuerAddress(e.target.value)
                 }
-                placeholder="Enter issuer address for credential deletion"
+                placeholder="Enter issuer address for accept/delete operations"
                 className="mt-1"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Required for deleting credentials issued by others
+                Required for accepting or deleting credentials
               </p>
             </div>
 
-            <div className="flex gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <Button
                 onClick={handleCreateCredential}
                 disabled={isCreatePending || !isConnected}
-                className="flex-1"
+                className="w-full"
               >
                 {isCreatePending ? (
                   <>
@@ -184,7 +213,23 @@ export default function DemoContainer() {
                     Creating...
                   </>
                 ) : (
-                  "Create Credential"
+                  "Create"
+                )}
+              </Button>
+              
+              <Button
+                onClick={handleAcceptCredential}
+                disabled={isAcceptPending || !isConnected}
+                variant="secondary"
+                className="w-full"
+              >
+                {isAcceptPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Accepting...
+                  </>
+                ) : (
+                  "Accept"
                 )}
               </Button>
               
@@ -192,7 +237,7 @@ export default function DemoContainer() {
                 onClick={handleDeleteCredential}
                 disabled={isDeletePending || !isConnected}
                 variant="destructive"
-                className="flex-1"
+                className="w-full"
               >
                 {isDeletePending ? (
                   <>
@@ -200,7 +245,7 @@ export default function DemoContainer() {
                     Deleting...
                   </>
                 ) : (
-                  "Delete Credential"
+                  "Delete"
                 )}
               </Button>
             </div>
@@ -212,6 +257,15 @@ export default function DemoContainer() {
               <XCircle className="h-4 w-4" />
               <AlertDescription>
                 Error creating credential: {createError?.message || "Unknown error"}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {isAcceptError && (
+            <Alert variant="destructive">
+              <XCircle className="h-4 w-4" />
+              <AlertDescription>
+                Error accepting credential: {acceptError?.message || "Unknown error"}
               </AlertDescription>
             </Alert>
           )}
@@ -235,6 +289,16 @@ export default function DemoContainer() {
             </Alert>
           )}
 
+          {isAcceptSuccess && acceptData && (
+            <Alert>
+              <CheckCircle className="h-4 w-4" />
+              <AlertDescription>
+                Credential accepted successfully! Transaction Hash:{" "}
+                {acceptData.result?.hash}
+              </AlertDescription>
+            </Alert>
+          )}
+
           {isDeleteSuccess && deleteData && (
             <Alert>
               <CheckCircle className="h-4 w-4" />
@@ -246,7 +310,7 @@ export default function DemoContainer() {
           )}
 
           {/* Transaction Details */}
-          {(createData || deleteData) && (
+          {(createData || acceptData || deleteData) && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Transaction Details</CardTitle>
@@ -256,30 +320,30 @@ export default function DemoContainer() {
                   <div className="flex justify-between">
                     <span className="font-medium">Type:</span>
                     <Badge variant="outline">
-                      {createData ? "Create" : "Delete"}
+                      {createData ? "Create" : acceptData ? "Accept" : "Delete"}
                     </Badge>
                   </div>
                   <div className="flex justify-between">
                     <span className="font-medium">Status:</span>
                     <Badge
-                      variant={(createData?.result?.validated || deleteData?.result?.validated) ? "default" : "secondary"}
+                      variant={(createData?.result?.validated || acceptData?.result?.validated || deleteData?.result?.validated) ? "default" : "secondary"}
                     >
-                      {(createData?.result?.validated || deleteData?.result?.validated) ? "Validated" : "Pending"}
+                      {(createData?.result?.validated || acceptData?.result?.validated || deleteData?.result?.validated) ? "Validated" : "Pending"}
                     </Badge>
                   </div>
                   <div className="flex justify-between">
                     <span className="font-medium">Hash:</span>
                     <span className="font-mono text-xs break-all">
-                      {createData?.result?.hash || deleteData?.result?.hash}
+                      {createData?.result?.hash || acceptData?.result?.hash || deleteData?.result?.hash}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="font-medium">Ledger Index:</span>
-                    <span>{createData?.result?.ledger_index || deleteData?.result?.ledger_index}</span>
+                    <span>{createData?.result?.ledger_index || acceptData?.result?.ledger_index || deleteData?.result?.ledger_index}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="font-medium">Fee:</span>
-                    <span>{createData?.result?.tx_json?.Fee || deleteData?.result?.tx_json?.Fee} XRP</span>
+                    <span>{createData?.result?.tx_json?.Fee || acceptData?.result?.tx_json?.Fee || deleteData?.result?.tx_json?.Fee} XRP</span>
                   </div>
                 </div>
               </CardContent>
