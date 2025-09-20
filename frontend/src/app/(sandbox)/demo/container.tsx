@@ -17,22 +17,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCredentialCreate } from "@/hooks/useCredentialCreate";
 import { useCredentialCheck } from "@/hooks/useCredentialCheck";
+import { useCredentialDelete } from "@/hooks/useCredentialDelete";
 import { useWalletStore } from "@/stores/walletStore";
 
 export default function DemoContainer() {
   const {
     mutate: createCredential,
-    isPending,
-    isSuccess,
-    isError,
-    data,
-    error,
+    isPending: isCreatePending,
+    isSuccess: isCreateSuccess,
+    isError: isCreateError,
+    data: createData,
+    error: createError,
   } = useCredentialCreate();
+  
+  const {
+    mutate: deleteCredential,
+    isPending: isDeletePending,
+    isSuccess: isDeleteSuccess,
+    isError: isDeleteError,
+    data: deleteData,
+    error: deleteError,
+  } = useCredentialDelete();
   const { selectedUser, isConnected } = useWalletStore();
   const [credentialType, setCredentialType] = useState("KYC");
   const [subjectAddress, setSubjectAddress] = useState("");
+  const [issuerAddress, setIssuerAddress] = useState("");
   const credentialTypeId = useId();
   const subjectAddressId = useId();
+  const issuerAddressId = useId();
 
   const handleCreateCredential = () => {
     if (!isConnected || !selectedUser) {
@@ -48,6 +60,21 @@ export default function DemoContainer() {
         Subject: subjectAddress || selectedUser.address,
         CredentialType: credentialType,
         Expiration: now + 3600, // 1時間後に期限切れ
+      },
+    });
+  };
+
+  const handleDeleteCredential = () => {
+    if (!isConnected || !selectedUser) {
+      alert("Please connect a wallet first");
+      return;
+    }
+
+    deleteCredential({
+      input: {
+        Issuer: issuerAddress || selectedUser.address,
+        Subject: selectedUser.address, // 本人が削除主体
+        CredentialType: credentialType,
       },
     });
   };
@@ -128,44 +155,98 @@ export default function DemoContainer() {
               </p>
             </div>
 
-            <Button
-              onClick={handleCreateCredential}
-              disabled={isPending || !isConnected}
-              className="w-full"
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Credential...
-                </>
-              ) : (
-                "Create Credential"
-              )}
-            </Button>
+            <div>
+              <Label htmlFor={issuerAddressId}>Issuer Address (for Delete)</Label>
+              <Input
+                id={issuerAddressId}
+                type="text"
+                value={issuerAddress}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setIssuerAddress(e.target.value)
+                }
+                placeholder="Enter issuer address for credential deletion"
+                className="mt-1"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Required for deleting credentials issued by others
+              </p>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                onClick={handleCreateCredential}
+                disabled={isCreatePending || !isConnected}
+                className="flex-1"
+              >
+                {isCreatePending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  "Create Credential"
+                )}
+              </Button>
+              
+              <Button
+                onClick={handleDeleteCredential}
+                disabled={isDeletePending || !isConnected}
+                variant="destructive"
+                className="flex-1"
+              >
+                {isDeletePending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  "Delete Credential"
+                )}
+              </Button>
+            </div>
           </div>
 
           {/* Status Messages */}
-          {isError && (
+          {isCreateError && (
             <Alert variant="destructive">
               <XCircle className="h-4 w-4" />
               <AlertDescription>
-                Error creating credential: {error?.message || "Unknown error"}
+                Error creating credential: {createError?.message || "Unknown error"}
               </AlertDescription>
             </Alert>
           )}
 
-          {isSuccess && data && (
+          {isDeleteError && (
+            <Alert variant="destructive">
+              <XCircle className="h-4 w-4" />
+              <AlertDescription>
+                Error deleting credential: {deleteError?.message || "Unknown error"}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {isCreateSuccess && createData && (
             <Alert>
               <CheckCircle className="h-4 w-4" />
               <AlertDescription>
                 Credential created successfully! Transaction Hash:{" "}
-                {data.result?.hash}
+                {createData.result?.hash}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {isDeleteSuccess && deleteData && (
+            <Alert>
+              <CheckCircle className="h-4 w-4" />
+              <AlertDescription>
+                Credential deleted successfully! Transaction Hash:{" "}
+                {deleteData.result?.hash}
               </AlertDescription>
             </Alert>
           )}
 
           {/* Transaction Details */}
-          {data && (
+          {(createData || deleteData) && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Transaction Details</CardTitle>
@@ -173,26 +254,32 @@ export default function DemoContainer() {
               <CardContent>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
+                    <span className="font-medium">Type:</span>
+                    <Badge variant="outline">
+                      {createData ? "Create" : "Delete"}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="font-medium">Status:</span>
                     <Badge
-                      variant={data.result?.validated ? "default" : "secondary"}
+                      variant={(createData?.result?.validated || deleteData?.result?.validated) ? "default" : "secondary"}
                     >
-                      {data.result?.validated ? "Validated" : "Pending"}
+                      {(createData?.result?.validated || deleteData?.result?.validated) ? "Validated" : "Pending"}
                     </Badge>
                   </div>
                   <div className="flex justify-between">
                     <span className="font-medium">Hash:</span>
                     <span className="font-mono text-xs break-all">
-                      {data.result?.hash}
+                      {createData?.result?.hash || deleteData?.result?.hash}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="font-medium">Ledger Index:</span>
-                    <span>{data.result?.ledger_index}</span>
+                    <span>{createData?.result?.ledger_index || deleteData?.result?.ledger_index}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="font-medium">Fee:</span>
-                    <span>{data.result?.tx_json?.Fee} XRP</span>
+                    <span>{createData?.result?.tx_json?.Fee || deleteData?.result?.tx_json?.Fee} XRP</span>
                   </div>
                 </div>
               </CardContent>
