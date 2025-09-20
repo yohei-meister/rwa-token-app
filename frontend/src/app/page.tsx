@@ -1,12 +1,19 @@
 import Image from "next/image";
-import { Button } from '@/components/ui/button'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { funds, Fund } from "@/data/funds";
 
 // 文字数制限用のヘルパー関数
 const truncateText = (text: string, maxLength: number) => {
   if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + '...';
+  return text.slice(0, maxLength) + "...";
 };
 
 export default function Home() {
@@ -15,7 +22,9 @@ export default function Home() {
       <Card className="w-120 hover:shadow-lg transition-all duration-200 hover:scale-105">
         <CardHeader className="pb-3">
           <div>
-            <CardTitle className="text-lg font-bold text-gray-900">{fund.name}</CardTitle>
+            <CardTitle className="text-lg font-bold text-gray-900">
+              {fund.name}
+            </CardTitle>
             <CardDescription className="text-sm text-blue-600 font-medium">
               {fund.symbol} ({fund.tokenSymbol})
             </CardDescription>
@@ -26,7 +35,7 @@ export default function Home() {
           <p className="text-sm text-gray-700 leading-relaxed">
             {truncateText(fund.description, 500)}
           </p>
-          
+
           {/* Fund details in a cleaner layout */}
           <div className="space-y-3">
             <div className="flex items-center justify-between py-2 border-b border-gray-100">
@@ -35,21 +44,21 @@ export default function Home() {
                 {fund.category}
               </span>
             </div>
-            
+
             <div className="flex items-center justify-between py-2 border-b border-gray-100">
               <span className="text-sm text-gray-600">Total AUM</span>
               <span className="text-sm font-semibold text-green-700">
                 {fund.totalAUM}
               </span>
             </div>
-            
+
             <div className="flex items-center justify-between py-2 border-b border-gray-100">
               <span className="text-sm text-gray-600">Token Price</span>
               <span className="text-sm font-semibold text-purple-700">
                 {fund.tokenPrice} XRP
               </span>
             </div>
-            
+
             <div className="flex items-center justify-between py-2">
               <span className="text-sm text-gray-600">Available Units</span>
               <span className="text-sm font-semibold text-orange-700">
@@ -60,11 +69,13 @@ export default function Home() {
         </CardContent>
 
         <CardFooter>
-          <Button className="w-full bg-blue-600 hover:bg-blue-700">View Details</Button>
+          <Button className="w-full bg-blue-600 hover:bg-blue-700">
+            View Details
+          </Button>
         </CardFooter>
       </Card>
-    )
-  }
+    );
+  };
 
   return (
     <div className="font-sans flex-1 bg-gradient-to-br from-gray-50 to-blue-50 flex flex-col">
@@ -76,7 +87,7 @@ export default function Home() {
           ))}
         </div>
       </main>
-      
+
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 h-12 flex items-center justify-center flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

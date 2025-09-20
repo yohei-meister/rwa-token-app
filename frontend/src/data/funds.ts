@@ -7,7 +7,7 @@ export type Fund = {
   category: string;
   tokenPrice: number;
   description: string;
-}
+};
 
 export const funds: Fund[] = [
   {
