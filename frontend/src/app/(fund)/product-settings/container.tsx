@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -18,25 +19,38 @@ import {
 import { funds } from "@/data/funds";
 
 export default function ProductsContainer() {
+  const [selectedFund, setSelectedFund] = useState<string>(funds[0].symbol);
+
+  const filteredFunds = funds.filter(fund => fund.symbol === selectedFund);
   return (
     <div className="font-sans flex-1 bg-gradient-to-br from-gray-50 to-blue-50 flex flex-col">
+      <div className="flex justify-center py-4">
+        <Select value={selectedFund} onValueChange={setSelectedFund}>
+          <SelectTrigger className="w-64">
+            <SelectValue placeholder="ファンドを選択" />
+          </SelectTrigger>
+          <SelectContent>
+            {funds.map((fund) => (
+              <SelectItem key={fund.symbol} value={fund.symbol}>
+                {fund.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       <div className="flex flex-row gap-4 justify-center items-center py-10">
-        {funds.map((fund) => (
+        {filteredFunds.map((fund) => (
           <Card key={fund.symbol} className="w-120 transition-all duration-200">
             <CardHeader>
               <CardTitle>{fund.name}</CardTitle>
             </CardHeader>
             <CardContent>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="設定を選択" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">アクティブ</SelectItem>
-                  <SelectItem value="inactive">非アクティブ</SelectItem>
-                  <SelectItem value="maintenance">メンテナンス</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600">シンボル: {fund.symbol}</p>
+                <p className="text-sm text-gray-600">ステータス: {fund.status}</p>
+                <p className="text-sm text-gray-600">カテゴリ: {fund.category}</p>
+                <p className="text-sm text-gray-600">総資産: {fund.totalAUM}</p>
+              </div>
             </CardContent>
             <CardFooter>
               <Button>Edit</Button>
