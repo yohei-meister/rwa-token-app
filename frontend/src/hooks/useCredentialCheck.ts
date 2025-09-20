@@ -22,7 +22,7 @@ export const useCredentialCheck = (account: string) => {
         const request: AccountObjectsRequest = {
           command: "account_objects",
           account: account,
-        }
+        };
 
         const response = await client.request(request);
         return response;

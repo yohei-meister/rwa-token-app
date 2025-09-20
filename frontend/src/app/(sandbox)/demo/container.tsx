@@ -110,7 +110,9 @@ export default function DemoContainer() {
             </div>
 
             <div>
-              <Label htmlFor={subjectAddressId}>Subject Address (Optional)</Label>
+              <Label htmlFor={subjectAddressId}>
+                Subject Address (Optional)
+              </Label>
               <Input
                 id={subjectAddressId}
                 type="text"
