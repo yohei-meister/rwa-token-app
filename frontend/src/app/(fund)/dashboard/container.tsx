@@ -12,7 +12,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getUserRegistrations, updateRegistrationStatus, type UserRegistration } from "@/data/registrations";
+import {
+  getUserRegistrations,
+  updateRegistrationStatus,
+  type UserRegistration,
+} from "@/data/registrations";
 import { useCredentialCreate } from "@/hooks/useCredentialCreate";
 import { useWalletStore } from "@/stores/walletStore";
 import { kyc } from "@/data/kyc";
@@ -20,8 +24,10 @@ import { kyc } from "@/data/kyc";
 export default function DashboardContainer() {
   const [registrations, setRegistrations] = useState<UserRegistration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [processingCredentials, setProcessingCredentials] = useState<Set<string>>(new Set());
-  
+  const [processingCredentials, setProcessingCredentials] = useState<
+    Set<string>
+  >(new Set());
+
   const { selectedUser, isConnected } = useWalletStore();
   const credentialCreateMutation = useCredentialCreate();
 
@@ -46,22 +52,46 @@ export default function DashboardContainer() {
     return () => clearInterval(interval);
   }, []);
 
-  const getStatusBadge = (status: UserRegistration['status']) => {
+  const getStatusBadge = (status: UserRegistration["status"]) => {
     switch (status) {
-      case 'pending':
-        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300">Pending</Badge>;
-      case 'rejected':
+      case "pending":
+        return (
+          <Badge
+            variant="secondary"
+            className="bg-yellow-100 text-yellow-800 border-yellow-300"
+          >
+            Pending
+          </Badge>
+        );
+      case "rejected":
         return <Badge variant="destructive">Rejected</Badge>;
-      case 'high':
-        return <Badge variant="default" className="bg-blue-100 text-blue-800 border-blue-300">High</Badge>;
-      case 'low':
-        return <Badge variant="secondary" className="bg-gray-100 text-gray-800 border-gray-300">Low</Badge>;
+      case "high":
+        return (
+          <Badge
+            variant="default"
+            className="bg-blue-100 text-blue-800 border-blue-300"
+          >
+            High
+          </Badge>
+        );
+      case "low":
+        return (
+          <Badge
+            variant="secondary"
+            className="bg-gray-100 text-gray-800 border-gray-300"
+          >
+            Low
+          </Badge>
+        );
       default:
         return <Badge variant="outline">Unknown</Badge>;
     }
   };
 
-  const handleStatusUpdate = async (id: string, status: UserRegistration['status']) => {
+  const handleStatusUpdate = async (
+    id: string,
+    status: UserRegistration["status"],
+  ) => {
     try {
       const success = updateRegistrationStatus(id, status);
       if (success) {
@@ -69,11 +99,11 @@ export default function DashboardContainer() {
         const updatedData = getUserRegistrations();
         setRegistrations(updatedData);
       } else {
-        alert('Failed to update status. Registration not found.');
+        alert("Failed to update status. Registration not found.");
       }
     } catch (error) {
-      console.error('Error updating status:', error);
-      alert('Failed to update status. Please try again.');
+      console.error("Error updating status:", error);
+      alert("Failed to update status. Please try again.");
     }
   };
 
@@ -81,15 +111,15 @@ export default function DashboardContainer() {
     try {
       // Confirm rejection
       const confirmReject = confirm(
-        `Are you sure you want to reject the registration for ${registration.fullName}?\n\nThis action cannot be undone.`
+        `Are you sure you want to reject the registration for ${registration.fullName}?\n\nThis action cannot be undone.`,
       );
-      
+
       if (!confirmReject) {
         return;
       }
 
       // Update status to rejected
-      const success = updateRegistrationStatus(registration.id, 'rejected');
+      const success = updateRegistrationStatus(registration.id, "rejected");
       if (success) {
         // Refresh the data
         const updatedData = getUserRegistrations();
@@ -99,12 +129,16 @@ export default function DashboardContainer() {
         throw new Error("Failed to update registration status");
       }
     } catch (error) {
-      console.error('Error rejecting registration:', error);
-      alert(`Failed to reject registration: ${error.message || 'Unknown error'}`);
+      console.error("Error rejecting registration:", error);
+      alert(
+        `Failed to reject registration: ${error.message || "Unknown error"}`,
+      );
     }
   };
 
-  const handleHighStatusWithCredential = async (registration: UserRegistration) => {
+  const handleHighStatusWithCredential = async (
+    registration: UserRegistration,
+  ) => {
     try {
       // Check if wallet is connected
       if (!isConnected || !selectedUser) {
@@ -113,10 +147,10 @@ export default function DashboardContainer() {
       }
 
       // Add to processing set
-      setProcessingCredentials(prev => new Set(prev).add(registration.id));
+      setProcessingCredentials((prev) => new Set(prev).add(registration.id));
 
       // Find High Status from kyc data
-      const highStatusKyc = kyc.find(k => k.name === "High Status");
+      const highStatusKyc = kyc.find((k) => k.name === "High Status");
       if (!highStatusKyc) {
         throw new Error("High Status KYC not found");
       }
@@ -125,30 +159,34 @@ export default function DashboardContainer() {
       const now = Math.floor(Date.now() / 1000);
       const credentialInput = {
         TransactionType: "CredentialCreate" as const,
-        Account: selectedUser.address,        // Required: Account field from wallet
-        Subject: registration.walletAddress,  // Target user's wallet address
-        CredentialType: highStatusKyc.name,   // "High Status"
-        Expiration: now + 3600 * 24 * 365,   // 1 year expiration
+        Account: selectedUser.address, // Required: Account field from wallet
+        Subject: registration.walletAddress, // Target user's wallet address
+        CredentialType: highStatusKyc.name, // "High Status"
+        Expiration: now + 3600 * 24 * 365, // 1 year expiration
       };
 
       await credentialCreateMutation.mutateAsync({ input: credentialInput });
 
       // Update status to high after successful credential creation
-      const success = updateRegistrationStatus(registration.id, 'high');
+      const success = updateRegistrationStatus(registration.id, "high");
       if (success) {
         // Refresh the data
         const updatedData = getUserRegistrations();
         setRegistrations(updatedData);
-        alert(`High status credential created successfully for ${registration.fullName}`);
+        alert(
+          `High status credential created successfully for ${registration.fullName}`,
+        );
       } else {
         throw new Error("Failed to update registration status");
       }
     } catch (error) {
-      console.error('Error creating high credential:', error);
-      alert(`Failed to create high status credential: ${error.message || 'Unknown error'}`);
+      console.error("Error creating high credential:", error);
+      alert(
+        `Failed to create high status credential: ${error.message || "Unknown error"}`,
+      );
     } finally {
       // Remove from processing set
-      setProcessingCredentials(prev => {
+      setProcessingCredentials((prev) => {
         const newSet = new Set(prev);
         newSet.delete(registration.id);
         return newSet;
@@ -156,7 +194,9 @@ export default function DashboardContainer() {
     }
   };
 
-  const handleLowStatusWithCredential = async (registration: UserRegistration) => {
+  const handleLowStatusWithCredential = async (
+    registration: UserRegistration,
+  ) => {
     try {
       // Check if wallet is connected
       if (!isConnected || !selectedUser) {
@@ -165,10 +205,10 @@ export default function DashboardContainer() {
       }
 
       // Add to processing set
-      setProcessingCredentials(prev => new Set(prev).add(registration.id));
+      setProcessingCredentials((prev) => new Set(prev).add(registration.id));
 
       // Find Low Status from kyc data
-      const lowStatusKyc = kyc.find(k => k.name === "Low Status");
+      const lowStatusKyc = kyc.find((k) => k.name === "Low Status");
       if (!lowStatusKyc) {
         throw new Error("Low Status KYC not found");
       }
@@ -177,30 +217,34 @@ export default function DashboardContainer() {
       const now = Math.floor(Date.now() / 1000);
       const credentialInput = {
         TransactionType: "CredentialCreate" as const,
-        Account: selectedUser.address,        // Required: Account field from wallet
-        Subject: registration.walletAddress,  // Target user's wallet address
-        CredentialType: lowStatusKyc.name,    // "Low Status"
-        Expiration: now + 3600 * 24 * 365,   // 1 year expiration
+        Account: selectedUser.address, // Required: Account field from wallet
+        Subject: registration.walletAddress, // Target user's wallet address
+        CredentialType: lowStatusKyc.name, // "Low Status"
+        Expiration: now + 3600 * 24 * 365, // 1 year expiration
       };
 
       await credentialCreateMutation.mutateAsync({ input: credentialInput });
 
       // Update status to low after successful credential creation
-      const success = updateRegistrationStatus(registration.id, 'low');
+      const success = updateRegistrationStatus(registration.id, "low");
       if (success) {
         // Refresh the data
         const updatedData = getUserRegistrations();
         setRegistrations(updatedData);
-        alert(`Low status credential created successfully for ${registration.fullName}`);
+        alert(
+          `Low status credential created successfully for ${registration.fullName}`,
+        );
       } else {
         throw new Error("Failed to update registration status");
       }
     } catch (error) {
-      console.error('Error creating low credential:', error);
-      alert(`Failed to create low status credential: ${error.message || 'Unknown error'}`);
+      console.error("Error creating low credential:", error);
+      alert(
+        `Failed to create low status credential: ${error.message || "Unknown error"}`,
+      );
     } finally {
       // Remove from processing set
-      setProcessingCredentials(prev => {
+      setProcessingCredentials((prev) => {
         const newSet = new Set(prev);
         newSet.delete(registration.id);
         return newSet;
@@ -211,15 +255,15 @@ export default function DashboardContainer() {
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       });
     } catch (error) {
-      return 'Invalid Date';
+      return "Invalid Date";
     }
   };
 
@@ -245,7 +289,7 @@ export default function DashboardContainer() {
         <p className="text-gray-600">
           View and manage all user registration requests
         </p>
-        
+
         {/* Wallet Status */}
         <div className="mt-4 p-3 bg-gray-50 rounded-lg">
           <div className="flex items-center justify-between">
@@ -268,13 +312,14 @@ export default function DashboardContainer() {
             </div>
             <div className="flex items-center">
               {isConnected ? (
-                <Badge variant="default" className="bg-green-100 text-green-800 border-green-300">
+                <Badge
+                  variant="default"
+                  className="bg-green-100 text-green-800 border-green-300"
+                >
                   Connected
                 </Badge>
               ) : (
-                <Badge variant="destructive">
-                  Disconnected
-                </Badge>
+                <Badge variant="destructive">Disconnected</Badge>
               )}
             </div>
           </div>
@@ -295,9 +340,12 @@ export default function DashboardContainer() {
 
         {registrations.length === 0 ? (
           <div className="p-8 text-center">
-            <div className="text-gray-500 text-lg mb-2">No registrations found</div>
+            <div className="text-gray-500 text-lg mb-2">
+              No registrations found
+            </div>
             <p className="text-gray-400 text-sm">
-              Registration requests will appear here once users submit their information.
+              Registration requests will appear here once users submit their
+              information.
             </p>
           </div>
         ) : (
@@ -329,9 +377,7 @@ export default function DashboardContainer() {
                     <TableCell className="font-mono text-xs">
                       {truncateAddress(registration.walletAddress)}
                     </TableCell>
-                    <TableCell>
-                      {getStatusBadge(registration.status)}
-                    </TableCell>
+                    <TableCell>{getStatusBadge(registration.status)}</TableCell>
                     <TableCell className="text-sm text-gray-600">
                       {formatDate(registration.registrationDate)}
                     </TableCell>
@@ -341,7 +387,7 @@ export default function DashboardContainer() {
                           size="sm"
                           variant="destructive"
                           onClick={() => handleRejectRegistration(registration)}
-                          disabled={registration.status !== 'pending'}
+                          disabled={registration.status !== "pending"}
                           className="text-xs px-2 py-1"
                         >
                           Reject
@@ -349,30 +395,38 @@ export default function DashboardContainer() {
                         <Button
                           size="sm"
                           variant="default"
-                          onClick={() => handleHighStatusWithCredential(registration)}
+                          onClick={() =>
+                            handleHighStatusWithCredential(registration)
+                          }
                           disabled={
-                            registration.status !== 'pending' || 
+                            registration.status !== "pending" ||
                             processingCredentials.has(registration.id) ||
                             !isConnected ||
                             !selectedUser
                           }
                           className="text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700"
                         >
-                          {processingCredentials.has(registration.id) ? 'Creating...' : 'High'}
+                          {processingCredentials.has(registration.id)
+                            ? "Creating..."
+                            : "High"}
                         </Button>
                         <Button
                           size="sm"
                           variant="secondary"
-                          onClick={() => handleLowStatusWithCredential(registration)}
+                          onClick={() =>
+                            handleLowStatusWithCredential(registration)
+                          }
                           disabled={
-                            registration.status !== 'pending' || 
+                            registration.status !== "pending" ||
                             processingCredentials.has(registration.id) ||
                             !isConnected ||
                             !selectedUser
                           }
                           className="text-xs px-2 py-1"
                         >
-                          {processingCredentials.has(registration.id) ? 'Creating...' : 'Low'}
+                          {processingCredentials.has(registration.id)
+                            ? "Creating..."
+                            : "Low"}
                         </Button>
                       </div>
                     </TableCell>
@@ -390,25 +444,25 @@ export default function DashboardContainer() {
           <div className="bg-white p-4 rounded-lg shadow-sm border">
             <div className="text-sm font-medium text-gray-600">Pending</div>
             <div className="text-2xl font-bold text-yellow-600">
-              {registrations.filter(r => r.status === 'pending').length}
+              {registrations.filter((r) => r.status === "pending").length}
             </div>
           </div>
           <div className="bg-white p-4 rounded-lg shadow-sm border">
             <div className="text-sm font-medium text-gray-600">High</div>
             <div className="text-2xl font-bold text-blue-600">
-              {registrations.filter(r => r.status === 'high').length}
+              {registrations.filter((r) => r.status === "high").length}
             </div>
           </div>
           <div className="bg-white p-4 rounded-lg shadow-sm border">
             <div className="text-sm font-medium text-gray-600">Low</div>
             <div className="text-2xl font-bold text-gray-600">
-              {registrations.filter(r => r.status === 'low').length}
+              {registrations.filter((r) => r.status === "low").length}
             </div>
           </div>
           <div className="bg-white p-4 rounded-lg shadow-sm border">
             <div className="text-sm font-medium text-gray-600">Rejected</div>
             <div className="text-2xl font-bold text-red-600">
-              {registrations.filter(r => r.status === 'rejected').length}
+              {registrations.filter((r) => r.status === "rejected").length}
             </div>
           </div>
         </div>

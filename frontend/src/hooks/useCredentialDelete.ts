@@ -5,14 +5,18 @@ import { useWalletStore } from "@/stores/walletStore";
 
 // 文字列を16進数にエンコードするヘルパー関数
 const stringToHex = (str: string): string => {
-  return Buffer.from(str, 'utf8').toString('hex').toUpperCase();
+  return Buffer.from(str, "utf8").toString("hex").toUpperCase();
 };
 
 export const useCredentialDelete = () => {
   const { selectedUser } = useWalletStore();
 
   return useMutation({
-    mutationFn: async ({ input }: { input: { Issuer: string; Subject: string; CredentialType: string } }) => {
+    mutationFn: async ({
+      input,
+    }: {
+      input: { Issuer: string; Subject: string; CredentialType: string };
+    }) => {
       const wallet = Wallet.fromSecret(selectedUser?.seed || "");
 
       if (!wallet) {
@@ -24,7 +28,7 @@ export const useCredentialDelete = () => {
         Account: wallet.address, // 本人が署名/送信
         Issuer: input.Issuer,
         Subject: input.Subject,
-        CredentialType: stringToHex(input.CredentialType)
+        CredentialType: stringToHex(input.CredentialType),
       };
 
       const client = new Client(xrplConfig.wss.dev);

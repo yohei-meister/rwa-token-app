@@ -5,25 +5,27 @@ export interface UserRegistration {
   income: string;
   walletAddress: string;
   registrationDate: string;
-  status: 'pending' | 'rejected' | 'high' | 'low';
+  status: "pending" | "rejected" | "high" | "low";
 }
 
 // In-memory storage for user registrations (in a real app, this would be a database)
 let registrations: UserRegistration[] = [];
 
-export const saveUserRegistration = (data: Omit<UserRegistration, 'id' | 'registrationDate' | 'status'>): UserRegistration => {
+export const saveUserRegistration = (
+  data: Omit<UserRegistration, "id" | "registrationDate" | "status">,
+): UserRegistration => {
   const newRegistration: UserRegistration = {
     id: generateId(),
     ...data,
     registrationDate: new Date().toISOString(),
-    status: 'pending'
+    status: "pending",
   };
 
   registrations.push(newRegistration);
-  
+
   // Save to localStorage for persistence
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('userRegistrations', JSON.stringify(registrations));
+  if (typeof window !== "undefined") {
+    localStorage.setItem("userRegistrations", JSON.stringify(registrations));
   }
 
   return newRegistration;
@@ -31,8 +33,8 @@ export const saveUserRegistration = (data: Omit<UserRegistration, 'id' | 'regist
 
 export const getUserRegistrations = (): UserRegistration[] => {
   // Load from localStorage if available
-  if (typeof window !== 'undefined') {
-    const stored = localStorage.getItem('userRegistrations');
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem("userRegistrations");
     if (stored) {
       registrations = JSON.parse(stored);
     }
@@ -40,18 +42,25 @@ export const getUserRegistrations = (): UserRegistration[] => {
   return registrations;
 };
 
-export const getUserRegistrationByWallet = (walletAddress: string): UserRegistration | undefined => {
+export const getUserRegistrationByWallet = (
+  walletAddress: string,
+): UserRegistration | undefined => {
   const allRegistrations = getUserRegistrations();
-  return allRegistrations.find(reg => reg.walletAddress === walletAddress);
+  return allRegistrations.find((reg) => reg.walletAddress === walletAddress);
 };
 
-export const updateRegistrationStatus = (id: string, status: UserRegistration['status']): boolean => {
+export const updateRegistrationStatus = (
+  id: string,
+  status: UserRegistration["status"],
+): boolean => {
   try {
     // Load current registrations
     const allRegistrations = getUserRegistrations();
-    
+
     // Find and update the registration
-    const registrationIndex = allRegistrations.findIndex(reg => reg.id === id);
+    const registrationIndex = allRegistrations.findIndex(
+      (reg) => reg.id === id,
+    );
     if (registrationIndex === -1) {
       return false; // Registration not found
     }
@@ -60,13 +69,13 @@ export const updateRegistrationStatus = (id: string, status: UserRegistration['s
     registrations = allRegistrations;
 
     // Save to localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('userRegistrations', JSON.stringify(registrations));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("userRegistrations", JSON.stringify(registrations));
     }
 
     return true;
   } catch (error) {
-    console.error('Error updating registration status:', error);
+    console.error("Error updating registration status:", error);
     return false;
   }
 };

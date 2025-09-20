@@ -7,7 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useWalletStore } from "@/stores/walletStore";
-import { saveUserRegistration, getUserRegistrationByWallet } from "@/data/registrations";
+import {
+  saveUserRegistration,
+  getUserRegistrationByWallet,
+} from "@/data/registrations";
 
 interface UserRegistrationForm {
   fullName: string;
@@ -19,15 +22,15 @@ interface UserRegistrationForm {
 export default function RegisterContainer() {
   const { selectedUser } = useWalletStore();
   const [formData, setFormData] = useState<UserRegistrationForm>({
-    fullName: '',
-    email: '',
-    income: '',
-    walletAddress: '',
+    fullName: "",
+    email: "",
+    income: "",
+    walletAddress: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<UserRegistrationForm>>({});
-  const [successMessage, setSuccessMessage] = useState<string>('');
-  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [successMessage, setSuccessMessage] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const [isAlreadyRegistered, setIsAlreadyRegistered] = useState(false);
 
   // ウォレットアドレスを自動入力と既存登録チェック
@@ -35,18 +38,20 @@ export default function RegisterContainer() {
     if (selectedUser?.address) {
       setFormData((prev: UserRegistrationForm) => ({
         ...prev,
-        walletAddress: selectedUser.address
+        walletAddress: selectedUser.address,
       }));
 
       // 既存の登録をチェック
-      const existingRegistration = getUserRegistrationByWallet(selectedUser.address);
+      const existingRegistration = getUserRegistrationByWallet(
+        selectedUser.address,
+      );
       if (existingRegistration) {
         setIsAlreadyRegistered(true);
         setFormData({
           fullName: existingRegistration.fullName,
           email: existingRegistration.email,
           income: existingRegistration.income,
-          walletAddress: existingRegistration.walletAddress
+          walletAddress: existingRegistration.walletAddress,
         });
       } else {
         setIsAlreadyRegistered(false);
@@ -58,62 +63,64 @@ export default function RegisterContainer() {
     const newErrors: Partial<UserRegistrationForm> = {};
 
     if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Full name is required';
+      newErrors.fullName = "Full name is required";
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email address is required';
+      newErrors.email = "Email address is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = "Please enter a valid email address";
     }
 
     if (!formData.income.trim()) {
-      newErrors.income = 'Income information is required';
+      newErrors.income = "Income information is required";
     }
 
     if (!formData.walletAddress.trim()) {
-      newErrors.walletAddress = 'Wallet address is required';
+      newErrors.walletAddress = "Wallet address is required";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (field: keyof UserRegistrationForm) => (
-    e: any
-  ) => {
+  const handleInputChange = (field: keyof UserRegistrationForm) => (e: any) => {
     setFormData((prev: UserRegistrationForm) => ({
       ...prev,
-      [field]: e.target.value
+      [field]: e.target.value,
     }));
 
     // エラーをクリア
     if (errors[field]) {
       setErrors((prev: Partial<UserRegistrationForm>) => ({
         ...prev,
-        [field]: undefined
+        [field]: undefined,
       }));
     }
   };
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     setIsSubmitting(true);
-    
+
     try {
       // Clear previous messages
-      setSuccessMessage('');
-      setErrorMessage('');
+      setSuccessMessage("");
+      setErrorMessage("");
 
       // Check if wallet address is already registered
-      const existingRegistration = getUserRegistrationByWallet(formData.walletAddress);
+      const existingRegistration = getUserRegistrationByWallet(
+        formData.walletAddress,
+      );
       if (existingRegistration) {
-        setErrorMessage('This wallet address is already registered. You cannot register multiple times with the same wallet.');
+        setErrorMessage(
+          "This wallet address is already registered. You cannot register multiple times with the same wallet.",
+        );
         return;
       }
 
@@ -122,25 +129,26 @@ export default function RegisterContainer() {
         fullName: formData.fullName,
         email: formData.email,
         income: formData.income,
-        walletAddress: formData.walletAddress
+        walletAddress: formData.walletAddress,
       });
 
-      console.log('User registration saved:', savedRegistration);
-      
+      console.log("User registration saved:", savedRegistration);
+
       // Simulate processing time
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Show success message
-      setSuccessMessage('Your request has been successfully submitted! We will review your application and get back to you soon.');
+      setSuccessMessage(
+        "Your request has been successfully submitted! We will review your application and get back to you soon.",
+      );
       setIsAlreadyRegistered(true);
 
       // Clear form errors
       setErrors({});
-      
     } catch (error) {
-      console.error('Registration error:', error);
-      setSuccessMessage('');
-      setErrorMessage('Registration failed. Please try again.');
+      console.error("Registration error:", error);
+      setSuccessMessage("");
+      setErrorMessage("Registration failed. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -151,7 +159,7 @@ export default function RegisterContainer() {
       <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
         User Registration
       </h1>
-      
+
       {!selectedUser && (
         <div className="mb-4 p-4 bg-yellow-100 border border-yellow-400 rounded-md">
           <p className="text-yellow-700 text-sm">
@@ -192,9 +200,9 @@ export default function RegisterContainer() {
             id="fullName"
             type="text"
             value={formData.fullName}
-            onChange={handleInputChange('fullName')}
+            onChange={handleInputChange("fullName")}
             placeholder="John Doe"
-            className={errors.fullName ? 'border-red-500' : ''}
+            className={errors.fullName ? "border-red-500" : ""}
             disabled={isSubmitting}
           />
           {errors.fullName && (
@@ -209,9 +217,9 @@ export default function RegisterContainer() {
             id="email"
             type="email"
             value={formData.email}
-            onChange={handleInputChange('email')}
+            onChange={handleInputChange("email")}
             placeholder="example@email.com"
-            className={errors.email ? 'border-red-500' : ''}
+            className={errors.email ? "border-red-500" : ""}
             disabled={isSubmitting}
           />
           {errors.email && (
@@ -226,9 +234,9 @@ export default function RegisterContainer() {
             id="income"
             type="text"
             value={formData.income}
-            onChange={handleInputChange('income')}
+            onChange={handleInputChange("income")}
             placeholder="Annual income: $50,000"
-            className={errors.income ? 'border-red-500' : ''}
+            className={errors.income ? "border-red-500" : ""}
             disabled={isSubmitting}
           />
           {errors.income && (
@@ -243,9 +251,9 @@ export default function RegisterContainer() {
             id="walletAddress"
             type="text"
             value={formData.walletAddress}
-            onChange={handleInputChange('walletAddress')}
+            onChange={handleInputChange("walletAddress")}
             placeholder="rXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-            className={`${errors.walletAddress ? 'border-red-500' : ''} bg-gray-100`}
+            className={`${errors.walletAddress ? "border-red-500" : ""} bg-gray-100`}
             disabled={true} // Auto-filled, not editable
           />
           {errors.walletAddress && (
@@ -262,10 +270,9 @@ export default function RegisterContainer() {
           className="w-full"
           disabled={isSubmitting || !selectedUser || isAlreadyRegistered}
         >
-          {isSubmitting ? 'Requesting...' : 'Request'}
+          {isSubmitting ? "Requesting..." : "Request"}
         </Button>
       </form>
-
     </div>
   );
 }

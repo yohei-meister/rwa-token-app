@@ -1,7 +1,7 @@
 export type Kyc = {
-  id: string
-  name: string
-}
+  id: string;
+  name: string;
+};
 
 export const kyc: Kyc[] = [
   {
@@ -12,4 +12,4 @@ export const kyc: Kyc[] = [
     id: "2",
     name: "Low Status",
   },
-]
+];

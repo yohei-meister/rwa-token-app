@@ -27,7 +27,7 @@ export default function AcceptContainer() {
     data,
     error,
   } = useCredentialAccept();
-  
+
   const { selectedUser, isConnected } = useWalletStore();
   const [credentialType, setCredentialType] = useState("KYC");
   const [issuerAddress, setIssuerAddress] = useState("");
@@ -64,7 +64,8 @@ export default function AcceptContainer() {
           Accept a credential issued to you on the XRPL network
           <br />
           <span className="text-xs text-amber-600 font-medium">
-            Note: The credential must first be created by the issuer with your address as the subject.
+            Note: The credential must first be created by the issuer with your
+            address as the subject.
           </span>
         </CardDescription>
       </CardHeader>

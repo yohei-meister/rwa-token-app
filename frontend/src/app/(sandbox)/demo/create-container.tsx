@@ -27,7 +27,7 @@ export default function CreateContainer() {
     data,
     error,
   } = useCredentialCreate();
-  
+
   const { selectedUser, isConnected } = useWalletStore();
   const [credentialType, setCredentialType] = useState("KYC");
   const [subjectAddress, setSubjectAddress] = useState("");
@@ -109,9 +109,7 @@ export default function CreateContainer() {
           </div>
 
           <div>
-            <Label htmlFor={subjectAddressId}>
-              Subject Address (Optional)
-            </Label>
+            <Label htmlFor={subjectAddressId}>Subject Address (Optional)</Label>
             <Input
               id={subjectAddressId}
               type="text"

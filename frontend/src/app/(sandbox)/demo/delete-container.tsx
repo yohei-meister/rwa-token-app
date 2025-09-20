@@ -27,7 +27,7 @@ export default function DeleteContainer() {
     data,
     error,
   } = useCredentialDelete();
-  
+
   const { selectedUser, isConnected } = useWalletStore();
   const [credentialType, setCredentialType] = useState("KYC");
   const [issuerAddress, setIssuerAddress] = useState("");
@@ -129,9 +129,7 @@ export default function DeleteContainer() {
           </div>
 
           <div>
-            <Label htmlFor={subjectAddressId}>
-              Subject Address (Optional)
-            </Label>
+            <Label htmlFor={subjectAddressId}>Subject Address (Optional)</Label>
             <Input
               id={subjectAddressId}
               type="text"

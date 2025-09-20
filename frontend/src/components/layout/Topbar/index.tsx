@@ -33,10 +33,14 @@ export function Topbar() {
 
   return (
     <>
-      <div className={`relative flex justify-center items-center p-4 py-8 border-b transition-colors duration-300 ${getBackgroundColor()}`}>
+      <div
+        className={`relative flex justify-center items-center p-4 py-8 border-b transition-colors duration-300 ${getBackgroundColor()}`}
+      >
         <div className="absolute left-4 flex items-center">
           <Link href="/" className="hover:opacity-80 transition-opacity">
-            <h1 className="text-xl font-bold">Asian Private Equity Token Marketplace</h1>
+            <h1 className="text-xl font-bold">
+              Asian Private Equity Token Marketplace
+            </h1>
           </Link>
         </div>
 
@@ -50,9 +54,14 @@ export function Topbar() {
           <div className="flex justify-center gap-4">
             {selectedUser.userType === UserTypes.FUND ? (
               // Fund用のナビゲーション
-              <Link href="/dashboard">
-                <Button variant="ghost">Dashboard</Button>
-              </Link>
+              <>
+                <Link href="/dashboard">
+                  <Button variant="ghost">Dashboard</Button>
+                </Link>
+                <Link href="/product-settings">
+                  <Button variant="ghost">Product Settings</Button>
+                </Link>
+              </>
             ) : (
               // User用のナビゲーション
               <>
