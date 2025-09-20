@@ -1,127 +1,60 @@
 // @ts-nocheck
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/shadcn-io/spinner";
-import { funds, type Fund } from "@/data/funds";
-import { useEffect, useState } from "react";
-import { useCredentialCheck } from "@/hooks/useCredentialCheck";
+import { funds } from "@/data/funds";
 import { useCredentialAccept } from "@/hooks/useCredentialAccept";
+import { useCredentialCheck } from "@/hooks/useCredentialCheck";
 import { useWalletStore } from "@/stores/walletStore";
-import { kyc } from "@/data/kyc";
+import { hexToString } from "@/utils/string";
+import FundCard from "./_components/fund-card";
 
-// 文字数制限用のヘルパー関数
-const truncateText = (text: string, maxLength: number) => {
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + "...";
-};
-
-const FundCard: React.FC<{ fund: Fund; userStatuses: string[] }> = ({
-  fund,
-  userStatuses,
-}) => {
-  return (
-    <Card className="w-120 hover:shadow-lg transition-all duration-200 hover:scale-105">
-      <CardHeader className="pb-3">
-        <div>
-          <CardTitle className="text-lg font-bold text-gray-900">
-            {fund.name}
-          </CardTitle>
-          <CardDescription className="text-sm text-blue-600 font-medium">
-            {fund.symbol} ({fund.tokenSymbol})
-          </CardDescription>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Description with character limit */}
-        <p className="text-sm text-gray-700 leading-relaxed">
-          {truncateText(fund.description, 500)}
-        </p>
-
-        {/* Fund details in a cleaner layout */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between py-2 border-b border-gray-100">
-            <span className="text-sm text-gray-600">Category</span>
-            <span className="text-sm font-semibold text-gray-900 bg-blue-100 px-2 py-1 rounded-full">
-              {fund.category}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between py-2 border-b border-gray-100">
-            <span className="text-sm text-gray-600">Total AUM</span>
-            <span className="text-sm font-semibold text-green-700">
-              {fund.totalAUM}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between py-2 border-b border-gray-100">
-            <span className="text-sm text-gray-600">Token Price</span>
-            <span className="text-sm font-semibold text-purple-700">
-              {fund.tokenPrice} XRP
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between py-2">
-            <span className="text-sm text-gray-600">Available Units</span>
-            <span className="text-sm font-semibold text-orange-700">
-              {fund.availableUnits}
-            </span>
-          </div>
-        </div>
-      </CardContent>
-
-      <CardFooter>
-        <Button className="w-full bg-blue-600 hover:bg-blue-700">
-          View Details
-        </Button>
-      </CardFooter>
-    </Card>
-  );
-};
+interface AccountObject {
+  LedgerEntryType: string;
+  Subject?: string;
+  CredentialType?: string;
+  Issuer?: string;
+  Accepted?: boolean;
+}
 
 export default function ProductsContainer() {
   const { selectedUser, isConnected } = useWalletStore();
   const {
     data: credentialData,
     isLoading,
-    error,
     refetch,
   } = useCredentialCheck(selectedUser?.address || "");
   const credentialAcceptMutation = useCredentialAccept();
   const [isAcceptingCredential, setIsAcceptingCredential] = useState(false);
   const [hasCheckedPendingCredentials, setHasCheckedPendingCredentials] =
     useState(false);
+  const [showCredentialDialog, setShowCredentialDialog] = useState(false);
+  const [pendingCredentials, setPendingCredentials] = useState<AccountObject[]>([]);
 
-  // 文字列を16進数からデコードするヘルパー関数
-  const hexToString = (hex: string): string => {
-    try {
-      return Buffer.from(hex, "hex").toString("utf8");
-    } catch (error) {
-      return hex;
-    }
-  };
 
   // ユーザーの所有するCredentialステータスを取得
   const getUserCredentialStatuses = () => {
     if (!credentialData?.result?.account_objects) return [];
 
     const credentials = credentialData.result.account_objects.filter(
-      (obj: any) => obj.LedgerEntryType === "Credential",
+      (obj: AccountObject) => obj.LedgerEntryType === "Credential",
     );
 
     const userStatuses: string[] = [];
 
-    credentials.forEach((cred: any) => {
+    credentials.forEach((cred: AccountObject) => {
       const credentialType = hexToString(cred.CredentialType || "");
       if (credentialType === "High Status" || credentialType === "Low Status") {
         userStatuses.push(credentialType);
@@ -139,8 +72,8 @@ export default function ProductsContainer() {
     return null;
   };
 
-  // 未承認のCredentialCreate取引を確認してCredentialAcceptを実行
-  const checkAndAcceptPendingCredentials = async () => {
+  // 未承認のCredentialCreate取引を確認してダイアログを表示
+  const checkPendingCredentials = useCallback(() => {
     if (
       !credentialData?.result?.account_objects ||
       hasCheckedPendingCredentials
@@ -150,7 +83,7 @@ export default function ProductsContainer() {
     const allObjects = credentialData.result.account_objects;
 
     // CredentialCreateトランザクションを探す（未承認のCredential）
-    const pendingCredentials = allObjects.filter((obj: any) => {
+    const pendingCreds = allObjects.filter((obj: AccountObject) => {
       // CredentialCreateから作られたが、まだAcceptされていないCredentialを探す
       return (
         obj.LedgerEntryType === "Credential" &&
@@ -159,33 +92,42 @@ export default function ProductsContainer() {
       ); // Acceptedフラグがfalseまたは存在しない
     });
 
-    if (pendingCredentials.length === 0) {
+    if (pendingCreds.length === 0) {
       setHasCheckedPendingCredentials(true);
       return;
     }
 
+    // High StatusまたはLow StatusのCredentialのみをフィルタリング
+    const validCredentials = pendingCreds.filter((cred) => {
+      const credentialType = hexToString(cred.CredentialType || "");
+      return credentialType === "High Status" || credentialType === "Low Status";
+    });
+
+    if (validCredentials.length > 0) {
+      setPendingCredentials(validCredentials);
+      setShowCredentialDialog(true);
+    } else {
+      setHasCheckedPendingCredentials(true);
+    }
+  }, [credentialData, selectedUser, hasCheckedPendingCredentials]);
+
+  // CredentialAcceptを実行
+  const handleAcceptCredentials = async () => {
     setIsAcceptingCredential(true);
+    setShowCredentialDialog(false);
 
     for (const pendingCred of pendingCredentials) {
       try {
         const credentialType = hexToString(pendingCred.CredentialType || "");
 
-        // High StatusまたはLow Statusの場合のみAcceptを実行
-        if (
-          credentialType === "High Status" ||
-          credentialType === "Low Status"
-        ) {
-          console.log(`Auto-accepting credential: ${credentialType}`);
+        await credentialAcceptMutation.mutateAsync({
+          input: {
+            Issuer: pendingCred.Issuer,
+            CredentialType: credentialType,
+          },
+        });
 
-          await credentialAcceptMutation.mutateAsync({
-            input: {
-              Issuer: pendingCred.Issuer,
-              CredentialType: credentialType,
-            },
-          });
-
-          console.log(`Successfully accepted credential: ${credentialType}`);
-        }
+        console.log(`Successfully accepted credential: ${credentialType}`);
       } catch (error) {
         console.error("Error accepting credential:", error);
       }
@@ -194,6 +136,7 @@ export default function ProductsContainer() {
     // すべての処理完了後、状態をリセットしてデータを再取得
     setIsAcceptingCredential(false);
     setHasCheckedPendingCredentials(true);
+    setPendingCredentials([]);
 
     // データを再取得
     setTimeout(() => {
@@ -223,15 +166,17 @@ export default function ProductsContainer() {
       isConnected &&
       !isAcceptingCredential
     ) {
-      checkAndAcceptPendingCredentials();
+      checkPendingCredentials();
     }
-  }, [credentialData, selectedUser, isConnected]);
+  }, [credentialData, selectedUser, isConnected, isAcceptingCredential, checkPendingCredentials]);
 
   // ウォレットが変更されたときに状態をリセット
   useEffect(() => {
     setHasCheckedPendingCredentials(false);
     setIsAcceptingCredential(false);
-  }, [selectedUser?.address]);
+    setShowCredentialDialog(false);
+    setPendingCredentials([]);
+  }, []);
 
   // ローディング状態
   if (isLoading) {
@@ -356,7 +301,6 @@ export default function ProductsContainer() {
                 <FundCard
                   key={fund.symbol}
                   fund={fund}
-                  userStatuses={userStatuses}
                 />
               ))}
             </div>
@@ -374,6 +318,42 @@ export default function ProductsContainer() {
           </div>
         </div>
       </footer>
+
+      {/* Credential Acceptance Dialog */}
+      <Dialog open={showCredentialDialog} onOpenChange={setShowCredentialDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>新しい認証情報が利用可能です</DialogTitle>
+            <DialogDescription>
+              あなたのアカウントに新しい認証情報が発行されました。
+              以下の認証情報を承認してアクセス権限を取得しますか？
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            {pendingCredentials.map((cred, index) => (
+              <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                <div className="font-medium text-sm">
+                  {hexToString(cred.CredentialType || "")}
+                </div>
+                <div className="text-xs text-gray-500">
+                  発行者: {cred.Issuer}
+                </div>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowCredentialDialog(false)}
+            >
+              キャンセル
+            </Button>
+            <Button onClick={handleAcceptCredentials}>
+              承認する
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

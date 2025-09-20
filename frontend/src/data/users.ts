@@ -22,13 +22,13 @@ export type User = {
 export const users: User[] = [
   {
     userType: UserTypes.FUND,
-    address: "rPf8zjAJkCifpErdgPpTDhKvSvXSSVQXPu",
-    seed: "sEd7Jgg9yw3iMPTPiYjF7jtkqRX8jG9",
+    address: "rUWhzgtWjpQ1yCJJj1tx6STyppYsidDfu6",
+    seed: "sEdSvhPaoaDJ1KRKhXWJVTwY4JNoGz3",
   },
   {
     userType: UserTypes.USER_A,
-    address: "rhH2dkq4EYrcjgWzRJUFG1onobuneHhUaJ",
-    seed: "sEdSQT4X7CxLVNsvrWnVdnhY5wjBJF1",
+    address: "rhCES3VAFoRy7Cncjb3ozYW9RgMMYJLah2",
+    seed: "sEdVrsBxtS5CdeZ1YiE2SfwLVeuSWZ2",
   },
   {
     userType: UserTypes.USER_B,
