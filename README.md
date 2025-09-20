@@ -1,3 +1,5 @@
+<img width="896" height="359" alt="Image" src="https://github.com/user-attachments/assets/52bd2baf-bf7b-4f2f-bebe-034db6f71257" />
+
 # Asian Private Equity Tokenization Platform
 
 A platform that enables access to Asian private equity funds through tokenization on XRPL (XRP Ledger).
