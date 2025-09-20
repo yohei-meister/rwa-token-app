@@ -1,11 +1,11 @@
 {
   "name": "rwa-token-app",
+  "private": true,
   "workspaces": [
     "frontend",
     "react-app"
   ],
   "scripts": {
     "clean": "rm -rf node_modules && rm -Rf react-app/node_modules && rm -Rf frontend/node_modules"
-  },
-  "packageManager": "yarn@4.9.2"
+  }
 }
