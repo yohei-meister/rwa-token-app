@@ -81,7 +81,7 @@ export default function Home() {
     <div className="font-sans flex-1 bg-gradient-to-br from-gray-50 to-blue-50 flex flex-col">
       {/* Main content */}
       <main className="flex-1 flex items-center justify-center px-4 py-8">
-        <div className="grid grid-cols-3 gap-8">
+        <div className="grid grid-cols-2 gap-8">
           {funds.map((fund) => (
             <FundCard key={fund.symbol} fund={fund} />
           ))}
@@ -93,7 +93,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="text-center">
             <p className="text-gray-600 text-sm">
-              © 2024 RWA Token App. All rights reserved.
+              © 2025 RWA Token App. All rights reserved.
             </p>
           </div>
         </div>
