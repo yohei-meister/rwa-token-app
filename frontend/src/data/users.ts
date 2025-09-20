@@ -1,9 +1,9 @@
 export enum UserTypes {
   NO_SELECT = "noSelect",
   FUND = "fund",
-  USER_A = "userA",
-  USER_B = "userB",
-  USER_C = "userC",
+  USER_A = "userA High",
+  USER_B = "userB Low",
+  USER_C = "userC NG",
 }
 
 export type UserType =
