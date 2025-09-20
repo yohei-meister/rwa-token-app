@@ -51,7 +51,7 @@ The **Asian Private Equity Tokenization Platform** is a tokenization platform fo
 ---
 
 Github: https://github.com/yohei-meister/rwa-token-app
-Website: https://rwa-token-app.vercel.app/
+Website: https://rwa-token-app-frontend.vercel.app/
 Docs: https://docs.google.com/presentation/d/1gnUMARVsdUyTT74YMcjN8QWogByvAVH0/edit?usp=sharing&ouid=112366403428763619065&rtpof=true&sd=true
 YouTube: https://youtu.be/gnwNdzkGx6A
 
