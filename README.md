@@ -16,6 +16,8 @@ Traditional KYC (Know Your Customer) processes had the limitation of only provid
 
 Additionally, since Credentials have an expiration period, the system ensures that the latest status is always reflected through regular reviews.
 
+<img width="1405" height="456" alt="Image" src="https://github.com/user-attachments/assets/f8eaa97a-c8e9-4a0f-90fb-e5220641c59e" />
+
 ### 2. Token-level PermissionedDomain Configuration
 
 In private equity sales, it is common to carefully select customers based on legal requirements and strategic corporate objectives.
