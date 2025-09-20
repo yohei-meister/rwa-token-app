@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCredentialCreate } from "@/hooks/useCredentialCreate";
+import { useCredentialCheck } from "@/hooks/useCredentialCheck";
 import { useWalletStore } from "@/stores/walletStore";
 
 export default function DemoContainer() {
