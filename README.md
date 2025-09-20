@@ -26,6 +26,8 @@ To address this, we perform user labeling through **Credentials (authentication 
 
 By configuring this Permissioned Domain for each token, it becomes possible to finely control the sales targets for tokens.
 
+<img width="1020" height="848" alt="Image" src="https://github.com/user-attachments/assets/3fb38672-ff74-4eb6-8c84-c979a2952d2d" />
+
 ### 3. Credentials Management Interface
 
 This interface allows centralized management of **Credentials (authentication information)** including issuance, deletion, and reference.
