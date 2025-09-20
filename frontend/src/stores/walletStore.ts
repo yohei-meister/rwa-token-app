@@ -1,15 +1,14 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { isInstalled, getAddress } from "@gemwallet/api";
+import { User, UserTypes } from "@/data/users";
 
 interface WalletState {
-  address: string | null;
+  selectedUser: User | null;
   isConnected: boolean;
-  isLoading: boolean;
 }
 
 interface WalletActions {
-  connect: () => Promise<void>;
+  selectUser: (user: User) => void;
   disconnect: () => void;
 }
 
@@ -19,64 +18,31 @@ export const useWalletStore = create<WalletStore>()(
   persist(
     (set) => ({
       // State
-      address: null,
+      selectedUser: null,
       isConnected: false,
-      isLoading: false,
 
       // Actions
-      connect: async () => {
-        set({ isLoading: true });
-
-        try {
-          const installedResponse = await isInstalled();
-
-          if (!installedResponse.result.isInstalled) {
-            throw new Error("Gemwallet is not installed");
-          }
-
-          const addressResponse = await getAddress();
-
-          if (addressResponse.result?.address) {
-            set({
-              address: addressResponse.result.address,
-              isConnected: true,
-              isLoading: false,
-            });
-          } else {
-            throw new Error("Failed to get wallet address");
-          }
-        } catch (error) {
-          console.error("Wallet connection error:", error);
-          set({
-            address: null,
-            isConnected: false,
-            isLoading: false,
-          });
-        }
+      selectUser: (user: User) => {
+        set({
+          selectedUser: user,
+          isConnected: true,
+        });
       },
 
       disconnect: () => {
         set({
-          address: null,
+          selectedUser: null,
           isConnected: false,
-          isLoading: false,
         });
       },
     }),
     {
       name: "wallet-storage", // ローカルストレージのキー名
       partialize: (state) => ({
-        // 永続化する状態を指定（isLoadingは永続化しない）
-        address: state.address,
+        // 永続化する状態を指定
+        selectedUser: state.selectedUser,
         isConnected: state.isConnected,
       }),
-      onRehydrateStorage: () => (state) => {
-        // ストレージから復元後の処理
-        if (state) {
-          // 復元時はローディング状態をリセット
-          state.isLoading = false;
-        }
-      },
-    }
-  )
+    },
+  ),
 );
