@@ -30,9 +30,9 @@ export default function DemoContainer() {
   } = useCredentialCreate();
   const { selectedUser, isConnected } = useWalletStore();
   const [credentialType, setCredentialType] = useState("KYC");
-  const [issuerAddress, setIssuerAddress] = useState("");
+  const [subjectAddress, setSubjectAddress] = useState("");
   const credentialTypeId = useId();
-  const issuerAddressId = useId();
+  const subjectAddressId = useId();
 
   const handleCreateCredential = () => {
     if (!isConnected || !selectedUser) {
@@ -40,13 +40,14 @@ export default function DemoContainer() {
       return;
     }
 
+    const now = Math.floor(Date.now() / 1000);
     createCredential({
       input: {
         TransactionType: "CredentialCreate",
         Account: selectedUser.address,
-        Subject: selectedUser.address,
+        Subject: subjectAddress || selectedUser.address,
         CredentialType: credentialType,
-        Issuer: issuerAddress || selectedUser.address,
+        Expiration: now + 3600, // 1時間後に期限切れ
       },
     });
   };
@@ -109,19 +110,19 @@ export default function DemoContainer() {
             </div>
 
             <div>
-              <Label htmlFor={issuerAddressId}>Issuer Address (Optional)</Label>
+              <Label htmlFor={subjectAddressId}>Subject Address (Optional)</Label>
               <Input
-                id={issuerAddressId}
+                id={subjectAddressId}
                 type="text"
-                value={issuerAddress}
+                value={subjectAddress}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setIssuerAddress(e.target.value)
+                  setSubjectAddress(e.target.value)
                 }
                 placeholder="Leave empty to use current wallet address"
                 className="mt-1"
               />
               <p className="text-xs text-gray-500 mt-1">
-                If empty, will use the current wallet address as issuer
+                If empty, will use the current wallet address as subject
               </p>
             </div>
 
