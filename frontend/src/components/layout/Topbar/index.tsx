@@ -50,9 +50,14 @@ export function Topbar() {
           <div className="flex justify-center gap-4">
             {selectedUser.userType === UserTypes.FUND ? (
               // Fund用のナビゲーション
-              <Link href="/dashboard">
-                <Button variant="ghost">Dashboard</Button>
-              </Link>
+              <>
+                <Link href="/dashboard">
+                  <Button variant="ghost">Dashboard</Button>
+                </Link>
+                <Link href="/create-strategy">
+                  <Button variant="ghost">Create Strategy</Button>
+                </Link>
+              </>
             ) : (
               // User用のナビゲーション
               <>
