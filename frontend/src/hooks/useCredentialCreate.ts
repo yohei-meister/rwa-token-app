@@ -5,7 +5,7 @@ import { useWalletStore } from "@/stores/walletStore";
 
 // 文字列を16進数にエンコードするヘルパー関数
 const stringToHex = (str: string): string => {
-  return Buffer.from(str, 'utf8').toString('hex').toUpperCase();
+  return Buffer.from(str, "utf8").toString("hex").toUpperCase();
 };
 
 export const useCredentialCreate = () => {
@@ -21,7 +21,7 @@ export const useCredentialCreate = () => {
 
       const encodedInput = {
         ...input,
-        CredentialType: stringToHex(input.CredentialType as string)
+        CredentialType: stringToHex(input.CredentialType as string),
       };
 
       const client = new Client(xrplConfig.wss.dev);
