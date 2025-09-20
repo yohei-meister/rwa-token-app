@@ -1,4 +1,15 @@
-export const funds = [
+export type Fund = {
+  name: string;
+  symbol: string;
+  tokenSymbol: string;
+  availableUnits: number;
+  totalAUM: string;
+  category: string;
+  tokenPrice: number;
+  description: string;
+};
+
+export const funds: Fund[] = [
   {
     name: "Private Equity Fund A",
     symbol: "FUND-A",
