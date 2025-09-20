@@ -1,70 +1,53 @@
-# RWA Tokenized PE Fund Marketplace Demo (XRPL)
+# Asian Private Equity Tokenization Platform
 
-## 🚀 What is this?
+A platform that enables access to Asian private equity funds through tokenization on XRPL (XRP Ledger).
 
-A proof-of-concept DApp for investing in tokenized private equity funds on the XRP Ledger.
+Additionally, by utilizing XRPL Credentials, the KYC (Know Your Customer) process is optimized.
 
-## 🧩 Features
+## Core Features
 
-- Connect XRPL Wallet (XAMAN)
-- Display available funds (Fund A, Fund B, Fund C)
-- Purchase fund tokens using XRP
-- Real-time balance updates
-- Token issuance via `xrpl.js`
-- Toast notifications and responsive UI
+1. User labeling through Credentials
+2. Token-level PermissionedDomain configuration
+3. Credentials management interface
 
-## 💻 Tech Stack
+### 1. User Labeling through Credentials
 
-- React + Vite
-- Tailwind CSS
-- XRPL (xrpl.js)
-- XUMM OAuth2 PKCE
-- .env-based configuration (for XRPL testnet credentials)
+Traditional KYC (Know Your Customer) processes had the limitation of only providing simple "OK" or "NG" judgments. To solve this, we issue different **Credential Types (authentication information)** of **"High Status" or "Low Status"** based on KYC results.
 
-## ⚙️ How to Run Locally
+Additionally, since Credentials have an expiration period, the system ensures that the latest status is always reflected through regular reviews.
 
-1. Clone the repository
+### 2. Token-level PermissionedDomain Configuration
 
-```bash
-git clone https://github.com/yohei-meister/rwa-token-app
-cd rwa-token-app
-```
+In private equity sales, it is common to carefully select customers based on legal requirements and strategic corporate objectives.
 
-2. Install dependencies
+To address this, we perform user labeling through **Credentials (authentication information)**. This enables flexible grouping of Permissioned Domains (areas where access is permitted).
 
-```bash
-npm install
-```
+By configuring this Permissioned Domain for each token, it becomes possible to finely control the sales targets for tokens.
 
-3. Set up environment variables
+### 3. Credentials Management Interface
 
-```bash
-# Copy the testnet credentials and XUMM API key from .env.local.public to .env
-cp .env.local.public .env
-```
+This interface allows centralized management of **Credentials (authentication information)** including issuance, deletion, and reference.
 
-> **Note**: This app uses:
->
-> - XRPL testnet accounts for token operations (because XAMAN wallets cannot handle testnet tokens)
-> - A demo XAMAN API key for wallet connection
->
-> The credentials in `.env.local.public` are pre-configured for testing the application. For production use, you should:
->
+This improves operational efficiency for administrators. However, since Credentials are highly sensitive information, only authorized users should perform these operations.
 
+## System Interaction Flow
 
-4. Start the development server
+1. (User) User registration through the marketplace user registration screen
+2. (Fund) KYC process based on information received from users
+3. (Fund) Credentials issuance based on KYC results
+4. (User) Access to marketplace
+5. (User) Credentials approval
+6. (App) Display token information according to Credentials
+7. (User) Transaction initiation
 
-```bash
-npm run dev
-```
+## Final Summary
 
-> **Important**: This demo app only works with the development server at `http://localhost:5173/`. This is because the XUMM API key is registered only for this URL in the XAMAN developer portal. If you need to use a different URL, you'll need to:
->
-> 1. Get your own XAMAN API key from the [XAMAN Developer Portal](https://apps.xaman.dev/)
-> 2. Register your desired URL in the XAMAN developer portal
-> 3. Update the API key in your `.env` file
+The **Asian Private Equity Tokenization Platform** is a tokenization platform for Asian private equity funds based on XRPL (XRP Ledger). It solves traditional financial product transaction challenges through an advanced KYC (Know Your Customer) system utilizing XRPL Credentials.
 
-## 📝 Note
+---
 
-This project uses XRPL Testnet.
-If the Testnet faucet is down, use preset accounts.
+Github: https://github.com/yohei-meister/rwa-token-app
+Website: https://rwa-token-app.vercel.app/
+Docs: https://docs.google.com/presentation/d/1gnUMARVsdUyTT74YMcjN8QWogByvAVH0/edit?usp=sharing&ouid=112366403428763619065&rtpof=true&sd=true
+YouTube: https://youtu.be/gnwNdzkGx6A
+
