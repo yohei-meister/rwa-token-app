@@ -36,7 +36,7 @@ export function Topbar() {
       <div className={`relative flex justify-center items-center p-4 py-8 border-b transition-colors duration-300 ${getBackgroundColor()}`}>
         <div className="absolute left-4 flex items-center">
           <Link href="/" className="hover:opacity-80 transition-opacity">
-            <h1 className="text-xl font-bold">RWA Token Marketplace</h1>
+            <h1 className="text-xl font-bold">Asian Private Equity Token Marketplace</h1>
           </Link>
         </div>
 
