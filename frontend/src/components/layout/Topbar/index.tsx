@@ -5,7 +5,7 @@ import { WalletConnectButton } from "@/components/layout/Topbar/buttons/WalletCo
 
 export function Topbar() {
   return (
-    <div className="relative flex justify-center items-center p-4 border-b">
+    <div className="relative flex justify-center items-center p-4 py-8 border-b">
       <div className="absolute left-4 flex items-center">
         <Link href="/" className="hover:opacity-80 transition-opacity">
           <h1 className="text-xl font-bold">RWA Token Marketplace</h1>
