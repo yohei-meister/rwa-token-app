@@ -26,7 +26,10 @@ const truncateText = (text: string, maxLength: number) => {
   return text.slice(0, maxLength) + "...";
 };
 
-const FundCard: React.FC<{ fund: Fund; userStatuses: string[] }> = ({ fund, userStatuses }) => {
+const FundCard: React.FC<{ fund: Fund; userStatuses: string[] }> = ({
+  fund,
+  userStatuses,
+}) => {
   return (
     <Card className="w-120 hover:shadow-lg transition-all duration-200 hover:scale-105">
       <CardHeader className="pb-3">
@@ -88,15 +91,21 @@ const FundCard: React.FC<{ fund: Fund; userStatuses: string[] }> = ({ fund, user
 
 export default function ProductsContainer() {
   const { selectedUser, isConnected } = useWalletStore();
-  const { data: credentialData, isLoading, error, refetch } = useCredentialCheck(selectedUser?.address || "");
+  const {
+    data: credentialData,
+    isLoading,
+    error,
+    refetch,
+  } = useCredentialCheck(selectedUser?.address || "");
   const credentialAcceptMutation = useCredentialAccept();
   const [isAcceptingCredential, setIsAcceptingCredential] = useState(false);
-  const [hasCheckedPendingCredentials, setHasCheckedPendingCredentials] = useState(false);
+  const [hasCheckedPendingCredentials, setHasCheckedPendingCredentials] =
+    useState(false);
 
   // 文字列を16進数からデコードするヘルパー関数
   const hexToString = (hex: string): string => {
     try {
-      return Buffer.from(hex, 'hex').toString('utf8');
+      return Buffer.from(hex, "hex").toString("utf8");
     } catch (error) {
       return hex;
     }
@@ -107,7 +116,7 @@ export default function ProductsContainer() {
     if (!credentialData?.result?.account_objects) return [];
 
     const credentials = credentialData.result.account_objects.filter(
-      (obj: any) => obj.LedgerEntryType === "Credential"
+      (obj: any) => obj.LedgerEntryType === "Credential",
     );
 
     const userStatuses: string[] = [];
@@ -132,16 +141,22 @@ export default function ProductsContainer() {
 
   // 未承認のCredentialCreate取引を確認してCredentialAcceptを実行
   const checkAndAcceptPendingCredentials = async () => {
-    if (!credentialData?.result?.account_objects || hasCheckedPendingCredentials) return;
+    if (
+      !credentialData?.result?.account_objects ||
+      hasCheckedPendingCredentials
+    )
+      return;
 
     const allObjects = credentialData.result.account_objects;
-    
+
     // CredentialCreateトランザクションを探す（未承認のCredential）
     const pendingCredentials = allObjects.filter((obj: any) => {
       // CredentialCreateから作られたが、まだAcceptされていないCredentialを探す
-      return obj.LedgerEntryType === "Credential" && 
-             obj.Subject === selectedUser?.address &&
-             !obj.Accepted; // Acceptedフラグがfalseまたは存在しない
+      return (
+        obj.LedgerEntryType === "Credential" &&
+        obj.Subject === selectedUser?.address &&
+        !obj.Accepted
+      ); // Acceptedフラグがfalseまたは存在しない
     });
 
     if (pendingCredentials.length === 0) {
@@ -154,29 +169,32 @@ export default function ProductsContainer() {
     for (const pendingCred of pendingCredentials) {
       try {
         const credentialType = hexToString(pendingCred.CredentialType || "");
-        
+
         // High StatusまたはLow Statusの場合のみAcceptを実行
-        if (credentialType === "High Status" || credentialType === "Low Status") {
+        if (
+          credentialType === "High Status" ||
+          credentialType === "Low Status"
+        ) {
           console.log(`Auto-accepting credential: ${credentialType}`);
-          
+
           await credentialAcceptMutation.mutateAsync({
             input: {
               Issuer: pendingCred.Issuer,
-              CredentialType: credentialType
-            }
+              CredentialType: credentialType,
+            },
           });
 
           console.log(`Successfully accepted credential: ${credentialType}`);
         }
       } catch (error) {
-        console.error('Error accepting credential:', error);
+        console.error("Error accepting credential:", error);
       }
     }
 
     // すべての処理完了後、状態をリセットしてデータを再取得
     setIsAcceptingCredential(false);
     setHasCheckedPendingCredentials(true);
-    
+
     // データを再取得
     setTimeout(() => {
       refetch();
@@ -188,9 +206,9 @@ export default function ProductsContainer() {
 
   // アクセス可能なファンドのみをフィルタリング
   const getAccessibleFunds = () => {
-    return funds.filter(fund => {
-      return fund.requiredStatus.some(requiredStatus => 
-        userStatuses.includes(requiredStatus)
+    return funds.filter((fund) => {
+      return fund.requiredStatus.some((requiredStatus) =>
+        userStatuses.includes(requiredStatus),
       );
     });
   };
@@ -199,7 +217,12 @@ export default function ProductsContainer() {
 
   // credentialDataが更新されたときに未承認のCredentialをチェック
   useEffect(() => {
-    if (credentialData && selectedUser && isConnected && !isAcceptingCredential) {
+    if (
+      credentialData &&
+      selectedUser &&
+      isConnected &&
+      !isAcceptingCredential
+    ) {
       checkAndAcceptPendingCredentials();
     }
   }, [credentialData, selectedUser, isConnected]);
@@ -217,8 +240,12 @@ export default function ProductsContainer() {
         <main className="flex-1 flex items-center justify-center px-4 py-8">
           <div className="text-center">
             <Spinner className="mx-auto mb-4" />
-            <div className="text-lg text-gray-700 font-semibold mb-2">Checking Your Credentials</div>
-            <div className="text-sm text-gray-500">Please wait while we verify your access level...</div>
+            <div className="text-lg text-gray-700 font-semibold mb-2">
+              Checking Your Credentials
+            </div>
+            <div className="text-sm text-gray-500">
+              Please wait while we verify your access level...
+            </div>
           </div>
         </main>
       </div>
@@ -232,9 +259,15 @@ export default function ProductsContainer() {
         <main className="flex-1 flex items-center justify-center px-4 py-8">
           <div className="text-center">
             <Spinner className="mx-auto mb-4" />
-            <div className="text-lg text-green-700 font-semibold mb-2">Accepting New Credentials</div>
-            <div className="text-sm text-gray-600">We found new credentials for your account.</div>
-            <div className="text-sm text-gray-500 mt-1">Accepting them automatically...</div>
+            <div className="text-lg text-green-700 font-semibold mb-2">
+              Accepting New Credentials
+            </div>
+            <div className="text-sm text-gray-600">
+              We found new credentials for your account.
+            </div>
+            <div className="text-sm text-gray-500 mt-1">
+              Accepting them automatically...
+            </div>
           </div>
         </main>
       </div>
@@ -263,7 +296,7 @@ export default function ProductsContainer() {
         <main className="flex-1 flex items-center justify-center px-4 py-8">
           <Alert variant="destructive" className="max-w-md">
             <AlertDescription>
-              You don't have the required credentials to access these products. 
+              You don't have the required credentials to access these products.
               Please complete the registration process first.
             </AlertDescription>
           </Alert>
@@ -278,16 +311,24 @@ export default function ProductsContainer() {
       <div className="bg-white border-b border-gray-200 px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">Investment Products</h1>
-            <p className="text-sm text-gray-600">Available investment opportunities</p>
+            <h1 className="text-xl font-semibold text-gray-900">
+              Investment Products
+            </h1>
+            <p className="text-sm text-gray-600">
+              Available investment opportunities
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-gray-600">Your Status:</span>
-            <Badge 
-              variant={userStatus === 'high' ? 'default' : 'secondary'}
-              className={userStatus === 'high' ? 'bg-blue-100 text-blue-800 border-blue-300' : 'bg-gray-100 text-gray-800 border-gray-300'}
+            <Badge
+              variant={userStatus === "high" ? "default" : "secondary"}
+              className={
+                userStatus === "high"
+                  ? "bg-blue-100 text-blue-800 border-blue-300"
+                  : "bg-gray-100 text-gray-800 border-gray-300"
+              }
             >
-              {userStatus === 'high' ? 'High Status' : 'Low Status'}
+              {userStatus === "high" ? "High Status" : "Low Status"}
             </Badge>
           </div>
         </div>
@@ -298,15 +339,27 @@ export default function ProductsContainer() {
         {accessibleFunds.length === 0 ? (
           <Alert className="max-w-md">
             <AlertDescription>
-              No investment products are currently available for your credential level. 
-              Please contact support to upgrade your access.
+              No investment products are currently available for your credential
+              level. Please contact support to upgrade your access.
             </AlertDescription>
           </Alert>
         ) : (
-          <div className="grid grid-cols-2 gap-8">
-            {accessibleFunds.map((fund) => (
-              <FundCard key={fund.symbol} fund={fund} userStatuses={userStatuses} />
-            ))}
+          <div className="flex justify-center">
+            <div
+              className={`${
+                accessibleFunds.length === 2
+                  ? "grid grid-cols-2 gap-12 max-w-5xl"
+                  : "flex flex-col items-center gap-8 max-w-2xl w-full"
+              }`}
+            >
+              {accessibleFunds.map((fund) => (
+                <FundCard
+                  key={fund.symbol}
+                  fund={fund}
+                  userStatuses={userStatuses}
+                />
+              ))}
+            </div>
           </div>
         )}
       </main>
