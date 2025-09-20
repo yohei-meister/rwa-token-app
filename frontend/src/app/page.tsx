@@ -1,5 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export default function Home() {
@@ -11,17 +17,18 @@ export default function Home() {
           <Badge variant="secondary" className="mb-6 text-sm">
             🚀 Next Generation Investment Platform
           </Badge>
-          
+
           <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6 leading-tight">
             Asian Private Equity
             <span className="block text-blue-600">Token Marketplace</span>
           </h1>
-          
+
           <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Invest in real-world assets through blockchain technology. 
-            Access private equity opportunities with transparency, security, and liquidity.
+            Invest in real-world assets through blockchain technology. Access
+            private equity opportunities with transparency, security, and
+            liquidity.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="text-lg px-8 py-6">
               Get Started
@@ -41,10 +48,11 @@ export default function Home() {
               Why Choose Our Platform?
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Experience the future of private equity investment with cutting-edge technology
+              Experience the future of private equity investment with
+              cutting-edge technology
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader className="text-center">
@@ -55,11 +63,12 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-center text-slate-600">
-                  Blockchain technology ensures complete transparency and security for all transactions
+                  Blockchain technology ensures complete transparency and
+                  security for all transactions
                 </CardDescription>
               </CardContent>
             </Card>
-            
+
             <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader className="text-center">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -69,11 +78,12 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-center text-slate-600">
-                  Trade your private equity tokens instantly with our advanced marketplace
+                  Trade your private equity tokens instantly with our advanced
+                  marketplace
                 </CardDescription>
               </CardContent>
             </Card>
-            
+
             <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader className="text-center">
                 <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -83,7 +93,8 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-center text-slate-600">
-                  Access Asian private equity opportunities from anywhere in the world
+                  Access Asian private equity opportunities from anywhere in the
+                  world
                 </CardDescription>
               </CardContent>
             </Card>
@@ -98,14 +109,21 @@ export default function Home() {
             Ready to Start Your Investment Journey?
           </h2>
           <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
-            Join thousands of investors who are already using our platform to access 
-            exclusive private equity opportunities.
+            Join thousands of investors who are already using our platform to
+            access exclusive private equity opportunities.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="text-lg px-8 py-6 bg-white text-slate-900 hover:bg-slate-100">
+            <Button
+              size="lg"
+              className="text-lg px-8 py-6 bg-white text-slate-900 hover:bg-slate-100"
+            >
               Connect Wallet
             </Button>
-            <Button variant="outline" size="lg" className="text-lg px-8 py-6 border-white text-white hover:bg-white hover:text-slate-900">
+            <Button
+              variant="outline"
+              size="lg"
+              className="text-lg px-8 py-6 border-white text-white hover:bg-white hover:text-slate-900"
+            >
               View Products
             </Button>
           </div>

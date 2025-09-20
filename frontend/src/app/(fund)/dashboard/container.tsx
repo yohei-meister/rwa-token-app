@@ -130,9 +130,7 @@ export default function DashboardContainer() {
       }
     } catch (error) {
       console.error("Error rejecting registration:", error);
-      alert(
-        `Failed to reject registration: ${error.message || "Unknown error"}`,
-      );
+      alert("Failed to reject registration");
     }
   };
 
@@ -181,9 +179,7 @@ export default function DashboardContainer() {
       }
     } catch (error) {
       console.error("Error creating high credential:", error);
-      alert(
-        `Failed to create high status credential: ${error.message || "Unknown error"}`,
-      );
+      alert("Failed to create high status credential");
     } finally {
       // Remove from processing set
       setProcessingCredentials((prev) => {
@@ -239,9 +235,7 @@ export default function DashboardContainer() {
       }
     } catch (error) {
       console.error("Error creating low credential:", error);
-      alert(
-        `Failed to create low status credential: ${error.message || "Unknown error"}`,
-      );
+      alert("Failed to create low status credential");
     } finally {
       // Remove from processing set
       setProcessingCredentials((prev) => {

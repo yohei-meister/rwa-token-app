@@ -41,8 +41,9 @@ export default function ProductsContainer() {
   const [hasCheckedPendingCredentials, setHasCheckedPendingCredentials] =
     useState(false);
   const [showCredentialDialog, setShowCredentialDialog] = useState(false);
-  const [pendingCredentials, setPendingCredentials] = useState<AccountObject[]>([]);
-
+  const [pendingCredentials, setPendingCredentials] = useState<AccountObject[]>(
+    [],
+  );
 
   // ユーザーの所有するCredentialステータスを取得
   const getUserCredentialStatuses = () => {
@@ -100,7 +101,9 @@ export default function ProductsContainer() {
     // High StatusまたはLow StatusのCredentialのみをフィルタリング
     const validCredentials = pendingCreds.filter((cred) => {
       const credentialType = hexToString(cred.CredentialType || "");
-      return credentialType === "High Status" || credentialType === "Low Status";
+      return (
+        credentialType === "High Status" || credentialType === "Low Status"
+      );
     });
 
     if (validCredentials.length > 0) {
@@ -168,7 +171,13 @@ export default function ProductsContainer() {
     ) {
       checkPendingCredentials();
     }
-  }, [credentialData, selectedUser, isConnected, isAcceptingCredential, checkPendingCredentials]);
+  }, [
+    credentialData,
+    selectedUser,
+    isConnected,
+    isAcceptingCredential,
+    checkPendingCredentials,
+  ]);
 
   // ウォレットが変更されたときに状態をリセット
   useEffect(() => {
@@ -298,10 +307,7 @@ export default function ProductsContainer() {
               }`}
             >
               {accessibleFunds.map((fund) => (
-                <FundCard
-                  key={fund.symbol}
-                  fund={fund}
-                />
+                <FundCard key={fund.symbol} fund={fund} />
               ))}
             </div>
           </div>
@@ -320,7 +326,10 @@ export default function ProductsContainer() {
       </footer>
 
       {/* Credential Acceptance Dialog */}
-      <Dialog open={showCredentialDialog} onOpenChange={setShowCredentialDialog}>
+      <Dialog
+        open={showCredentialDialog}
+        onOpenChange={setShowCredentialDialog}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>新しい認証情報が利用可能です</DialogTitle>
@@ -348,9 +357,7 @@ export default function ProductsContainer() {
             >
               キャンセル
             </Button>
-            <Button onClick={handleAcceptCredentials}>
-              承認する
-            </Button>
+            <Button onClick={handleAcceptCredentials}>承認する</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

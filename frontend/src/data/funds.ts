@@ -5,6 +5,7 @@ export type Fund = {
   availableUnits: number;
   totalAUM: string;
   category: string;
+  status: string;
   tokenPrice: number;
   description: string;
   requiredStatus: string[]; // Required KYC status to access this fund
@@ -18,6 +19,7 @@ export const funds: Fund[] = [
     availableUnits: 100,
     totalAUM: "USD 50M",
     category: "Buyout",
+    status: "Active",
     tokenPrice: 0.5, // XRP per token
     requiredStatus: ["High Status"], // High Status credential required
     description:
@@ -30,6 +32,7 @@ export const funds: Fund[] = [
     availableUnits: 50,
     totalAUM: "EUR 30M",
     category: "Growth Equity",
+    status: "Active",
     tokenPrice: 0.2, // XRP per token
     requiredStatus: ["High Status", "Low Status"], // Both High and Low Status can access
     description:
