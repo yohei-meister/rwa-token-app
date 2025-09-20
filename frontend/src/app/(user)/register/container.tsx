@@ -1,16 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useEffect, useState, useId, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Spinner } from "@/components/ui/shadcn-io/spinner";
 import {
   getUserRegistrationByWallet,
   saveUserRegistration,
 } from "@/data/registrations";
 import { useWalletStore } from "@/stores/walletStore";
 
+// Types
 interface UserRegistrationForm {
   fullName: string;
   email: string;
@@ -18,47 +21,52 @@ interface UserRegistrationForm {
   walletAddress: string;
 }
 
-export default function RegisterContainer() {
-  const { selectedUser } = useWalletStore();
-  const [formData, setFormData] = useState<UserRegistrationForm>({
-    fullName: "",
-    email: "",
-    income: "",
-    walletAddress: "",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+type FormField = keyof UserRegistrationForm;
+
+// Constants
+const FORM_FIELDS: {
+  key: FormField;
+  label: string;
+  placeholder: string;
+  type: string;
+}[] = [
+  {
+    key: "fullName",
+    label: "Full Name",
+    placeholder: "John Doe",
+    type: "text",
+  },
+  {
+    key: "email",
+    label: "Email Address",
+    placeholder: "example@email.com",
+    type: "email",
+  },
+  {
+    key: "income",
+    label: "Income Information",
+    placeholder: "Annual income: $50,000",
+    type: "text",
+  },
+];
+
+const MESSAGES = {
+  WALLET_REQUIRED: "Please connect your wallet before registration.",
+  REGISTRATION_SUCCESS:
+    "Your request has been successfully submitted! We will review your application and get back to you soon.",
+  REGISTRATION_ERROR: "Registration failed. Please try again.",
+  ALREADY_REGISTERED:
+    "You have already submitted a registration request with this wallet.",
+  DUPLICATE_WALLET:
+    "This wallet address is already registered. You cannot register multiple times with the same wallet.",
+  WALLET_AUTO_FILL: "* Auto-filled when wallet is connected",
+} as const;
+
+// Custom hooks
+const useFormValidation = (formData: UserRegistrationForm) => {
   const [errors, setErrors] = useState<Partial<UserRegistrationForm>>({});
-  const [successMessage, setSuccessMessage] = useState<string>("");
-  const [errorMessage, setErrorMessage] = useState<string>("");
-  const [isAlreadyRegistered, setIsAlreadyRegistered] = useState(false);
 
-  // ウォレットアドレスを自動入力と既存登録チェック
-  useEffect(() => {
-    if (selectedUser?.address) {
-      setFormData((prev: UserRegistrationForm) => ({
-        ...prev,
-        walletAddress: selectedUser.address,
-      }));
-
-      // 既存の登録をチェック
-      const existingRegistration = getUserRegistrationByWallet(
-        selectedUser.address,
-      );
-      if (existingRegistration) {
-        setIsAlreadyRegistered(true);
-        setFormData({
-          fullName: existingRegistration.fullName,
-          email: existingRegistration.email,
-          income: existingRegistration.income,
-          walletAddress: existingRegistration.walletAddress,
-        });
-      } else {
-        setIsAlreadyRegistered(false);
-      }
-    }
-  }, [selectedUser]);
-
-  const validateForm = (): boolean => {
+  const validateForm = useCallback((): boolean => {
     const newErrors: Partial<UserRegistrationForm> = {};
 
     if (!formData.fullName.trim()) {
@@ -81,197 +89,287 @@ export default function RegisterContainer() {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [formData]);
 
-  const handleInputChange = (field: keyof UserRegistrationForm) => (e: any) => {
-    setFormData((prev: UserRegistrationForm) => ({
-      ...prev,
-      [field]: e.target.value,
-    }));
-
-    // エラーをクリア
-    if (errors[field]) {
-      setErrors((prev: Partial<UserRegistrationForm>) => ({
-        ...prev,
-        [field]: undefined,
-      }));
-    }
-  };
-
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      // Clear previous messages
-      setSuccessMessage("");
-      setErrorMessage("");
-
-      // Check if wallet address is already registered
-      const existingRegistration = getUserRegistrationByWallet(
-        formData.walletAddress,
-      );
-      if (existingRegistration) {
-        setErrorMessage(
-          "This wallet address is already registered. You cannot register multiple times with the same wallet.",
-        );
-        return;
+  const clearFieldError = useCallback(
+    (field: FormField) => {
+      if (errors[field]) {
+        setErrors((prev) => ({
+          ...prev,
+          [field]: undefined,
+        }));
       }
+    },
+    [errors],
+  );
 
-      // Save user registration data
-      const savedRegistration = saveUserRegistration({
-        fullName: formData.fullName,
-        email: formData.email,
-        income: formData.income,
-        walletAddress: formData.walletAddress,
-      });
+  return { errors, validateForm, clearFieldError };
+};
 
-      console.log("User registration saved:", savedRegistration);
+// Components
+const LoadingSpinner = () => (
+  <div className="flex flex-col items-center justify-center py-12">
+    <Spinner variant="circle" className="h-8 w-8 text-blue-600" />
+    <p className="mt-4 text-sm text-gray-600 font-medium">
+      Loading registration form...
+    </p>
+  </div>
+);
 
-      // Simulate processing time
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Show success message
-      setSuccessMessage(
-        "Your request has been successfully submitted! We will review your application and get back to you soon.",
-      );
-      setIsAlreadyRegistered(true);
-
-      // Clear form errors
-      setErrors({});
-    } catch (error) {
-      console.error("Registration error:", error);
-      setSuccessMessage("");
-      setErrorMessage("Registration failed. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
+const StatusAlert = ({
+  type,
+  message,
+  className = "",
+}: {
+  type: "warning" | "success" | "error" | "info";
+  message: string;
+  className?: string;
+}) => {
+  const alertVariants = {
+    warning: "border-yellow-200 bg-yellow-50 text-yellow-800",
+    success: "border-green-200 bg-green-50 text-green-800",
+    error: "border-red-200 bg-red-50 text-red-800",
+    info: "border-blue-200 bg-blue-50 text-blue-800",
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
-        User Registration
-      </h1>
+    <Alert className={`mb-6 ${alertVariants[type]} ${className}`}>
+      <AlertDescription className="text-sm font-medium">
+        {message}
+      </AlertDescription>
+    </Alert>
+  );
+};
 
-      {!selectedUser && (
-        <div className="mb-4 p-4 bg-yellow-100 border border-yellow-400 rounded-md">
-          <p className="text-yellow-700 text-sm">
-            Please connect your wallet before registration.
-          </p>
-        </div>
+const FormField = ({
+  field,
+  value,
+  onChange,
+  error,
+  disabled = false,
+  isWalletField = false,
+}: {
+  field: FormField;
+  value: string;
+  onChange: (
+    field: FormField,
+  ) => (e: React.ChangeEvent<HTMLInputElement>) => void;
+  error?: string;
+  disabled?: boolean;
+  isWalletField?: boolean;
+}) => {
+  const fieldConfig = FORM_FIELDS.find((f) => f.key === field);
+  const fieldId = useId();
+
+  if (!fieldConfig) return null;
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={fieldId} className="text-sm font-semibold text-gray-700">
+        {fieldConfig.label} *
+      </Label>
+      <Input
+        id={fieldId}
+        type={fieldConfig.type}
+        value={value}
+        onChange={onChange(field)}
+        placeholder={fieldConfig.placeholder}
+        className={`h-12 ${
+          error
+            ? "border-red-500 focus:border-red-500"
+            : "border-gray-300 focus:border-blue-500"
+        } ${isWalletField ? "bg-gray-50" : ""}`}
+        disabled={disabled}
+      />
+      {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+      {isWalletField && (
+        <p className="text-gray-500 text-xs font-medium">
+          {MESSAGES.WALLET_AUTO_FILL}
+        </p>
       )}
+    </div>
+  );
+};
 
-      {successMessage && (
-        <Alert className="mb-4 border-green-500 bg-green-50">
-          <AlertDescription className="text-green-700">
-            {successMessage}
-          </AlertDescription>
-        </Alert>
-      )}
+export default function RegisterContainer() {
+  const { selectedUser } = useWalletStore();
+  const [formData, setFormData] = useState<UserRegistrationForm>({
+    fullName: "",
+    email: "",
+    income: "",
+    walletAddress: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [successMessage, setSuccessMessage] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [isAlreadyRegistered, setIsAlreadyRegistered] = useState(false);
 
-      {errorMessage && (
-        <Alert className="mb-4 border-red-500 bg-red-50">
-          <AlertDescription className="text-red-700">
-            {errorMessage}
-          </AlertDescription>
-        </Alert>
-      )}
+  const { errors, validateForm, clearFieldError } = useFormValidation(formData);
 
-      {isAlreadyRegistered && !successMessage && !errorMessage && (
-        <Alert className="mb-4 border-blue-500 bg-blue-50">
-          <AlertDescription className="text-blue-700">
-            You have already submitted a registration request with this wallet.
-          </AlertDescription>
-        </Alert>
-      )}
+  // Effects
+  useEffect(() => {
+    // Simulate initial loading
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Full Name */}
-        <div>
-          <Label htmlFor="fullName">Full Name *</Label>
-          <Input
-            id="fullName"
-            type="text"
-            value={formData.fullName}
-            onChange={handleInputChange("fullName")}
-            placeholder="John Doe"
-            className={errors.fullName ? "border-red-500" : ""}
-            disabled={isSubmitting}
-          />
-          {errors.fullName && (
-            <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
+    if (selectedUser?.address) {
+      setFormData((prev) => ({
+        ...prev,
+        walletAddress: selectedUser.address,
+      }));
+
+      const existingRegistration = getUserRegistrationByWallet(
+        selectedUser.address,
+      );
+      if (existingRegistration) {
+        setIsAlreadyRegistered(true);
+        setFormData({
+          fullName: existingRegistration.fullName,
+          email: existingRegistration.email,
+          income: existingRegistration.income,
+          walletAddress: existingRegistration.walletAddress,
+        });
+      } else {
+        setIsAlreadyRegistered(false);
+      }
+    }
+
+    return () => clearTimeout(timer);
+  }, [selectedUser]);
+
+  // Handlers
+  const handleInputChange = useCallback(
+    (field: FormField) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: e.target.value,
+      }));
+      clearFieldError(field);
+    },
+    [clearFieldError],
+  );
+
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+
+      if (!validateForm()) return;
+
+      setIsSubmitting(true);
+      setSuccessMessage("");
+      setErrorMessage("");
+
+      try {
+        const existingRegistration = getUserRegistrationByWallet(
+          formData.walletAddress,
+        );
+        if (existingRegistration) {
+          setErrorMessage(MESSAGES.DUPLICATE_WALLET);
+          return;
+        }
+
+        const savedRegistration = saveUserRegistration(formData);
+        console.log("User registration saved:", savedRegistration);
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        setSuccessMessage(MESSAGES.REGISTRATION_SUCCESS);
+        setIsAlreadyRegistered(true);
+      } catch (error) {
+        console.error("Registration error:", error);
+        setErrorMessage(MESSAGES.REGISTRATION_ERROR);
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [formData, validateForm],
+  );
+
+  // Show loading spinner initially
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-2xl mx-auto mt-10 px-4 sm:px-6 lg:px-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl text-center text-gray-800">
+              User Registration
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <LoadingSpinner />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-2xl mx-auto mt-10 px-4 sm:px-6 lg:px-8">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl text-center text-gray-800">
+            User Registration
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {/* Status Messages */}
+          {!selectedUser && (
+            <StatusAlert type="warning" message={MESSAGES.WALLET_REQUIRED} />
           )}
-        </div>
 
-        {/* Email Address */}
-        <div>
-          <Label htmlFor="email">Email Address *</Label>
-          <Input
-            id="email"
-            type="email"
-            value={formData.email}
-            onChange={handleInputChange("email")}
-            placeholder="example@email.com"
-            className={errors.email ? "border-red-500" : ""}
-            disabled={isSubmitting}
-          />
-          {errors.email && (
-            <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+          {successMessage && (
+            <StatusAlert type="success" message={successMessage} />
           )}
-        </div>
 
-        {/* Income Information */}
-        <div>
-          <Label htmlFor="income">Income Information *</Label>
-          <Input
-            id="income"
-            type="text"
-            value={formData.income}
-            onChange={handleInputChange("income")}
-            placeholder="Annual income: $50,000"
-            className={errors.income ? "border-red-500" : ""}
-            disabled={isSubmitting}
-          />
-          {errors.income && (
-            <p className="text-red-500 text-sm mt-1">{errors.income}</p>
+          {errorMessage && <StatusAlert type="error" message={errorMessage} />}
+
+          {isAlreadyRegistered && !successMessage && !errorMessage && (
+            <StatusAlert type="info" message={MESSAGES.ALREADY_REGISTERED} />
           )}
-        </div>
 
-        {/* Wallet Address */}
-        <div>
-          <Label htmlFor="walletAddress">Wallet Address *</Label>
-          <Input
-            id="walletAddress"
-            type="text"
-            value={formData.walletAddress}
-            onChange={handleInputChange("walletAddress")}
-            placeholder="rXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-            className={`${errors.walletAddress ? "border-red-500" : ""} bg-gray-100`}
-            disabled={true} // Auto-filled, not editable
-          />
-          {errors.walletAddress && (
-            <p className="text-red-500 text-sm mt-1">{errors.walletAddress}</p>
-          )}
-          <p className="text-gray-500 text-xs mt-1">
-            * Auto-filled when wallet is connected
-          </p>
-        </div>
+          {/* Registration Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {FORM_FIELDS.map((fieldConfig) => (
+              <FormField
+                key={fieldConfig.key}
+                field={fieldConfig.key}
+                value={formData[fieldConfig.key]}
+                onChange={handleInputChange}
+                error={errors[fieldConfig.key]}
+                disabled={isSubmitting}
+              />
+            ))}
 
-        {/* Submit Button */}
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={isSubmitting || !selectedUser || isAlreadyRegistered}
-        >
-          {isSubmitting ? "Requesting..." : "Request"}
-        </Button>
-      </form>
+            {/* Wallet Address Field */}
+            <FormField
+              field="walletAddress"
+              value={formData.walletAddress}
+              onChange={handleInputChange}
+              error={errors.walletAddress}
+              disabled={true}
+              isWalletField={true}
+            />
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              className="w-full h-12 text-base font-semibold rounded-xl"
+              disabled={isSubmitting || !selectedUser || isAlreadyRegistered}
+            >
+              {isSubmitting ? (
+                <div className="flex items-center justify-center">
+                  <Spinner variant="ellipsis" className="h-4 w-4 mr-2" />
+                  Requesting...
+                </div>
+              ) : (
+                "Request Registration"
+              )}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

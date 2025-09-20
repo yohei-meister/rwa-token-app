@@ -1,156 +1,56 @@
-# RWA Tokenized PE Fund Marketplace Demo (XRPL)
+# Asian Private Equity Tokenization Platform
 
-## 🚀 Overview
+A platform that enables access to Asian private equity funds through tokenization on XRPL (XRP Ledger).
 
-A proof-of-concept DApp for investing in tokenized private equity funds on the XRP Ledger.
+Additionally, by utilizing XRPL Credentials, the KYC (Know Your Customer) process is optimized.
 
-## 🧩 Features
+--
 
-- Connect XRPL Wallet (XAMAN)
-- Display available funds (Fund A, Fund B, Fund C)
-- Purchase fund tokens using XRP
-- Real-time balance updates
-- Token issuance via `xrpl.js`
-- Toast notifications and responsive UI
-- Credential management system
-- KYC functionality
-- Fund management dashboard
+Video Link
 
-## 💻 Tech Stack
+--
 
-### Frontend (Main Application)
-- Next.js 15 (App Router)
-- React 19
-- TypeScript
-- Tailwind CSS 4
-- shadcn/ui components
-- TanStack Query (React Query)
-- Zustand (state management)
-- XRPL (xrpl.js)
-- Biome (linter & formatter)
+## Core Features
 
-### Legacy (Reference)
-- React + Vite
-- XUMM OAuth2 PKCE
+1. User labeling through Credentials
+2. Token-level PermissionedDomain configuration
+3. Credentials management interface
 
-## ⚙️ How to Run Locally
+### 1. User Labeling through Credentials
 
-1. Clone the repository
+Traditional KYC (Know Your Customer) processes had the limitation of only providing simple "OK" or "NG" judgments. To solve this, we issue different **Credential Types (authentication information)** of **"High Status" or "Low Status"** based on KYC results.
 
-```bash
-git clone https://github.com/yohei-meister/rwa-token-app
-cd rwa-token-app
-```
+Additionally, since Credentials have an expiration period, the system ensures that the latest status is always reflected through regular reviews.
 
-2. Navigate to frontend directory and install dependencies
+### 2. Token-level PermissionedDomain Configuration
 
-```bash
-cd frontend
-npm install
-```
+In private equity sales, it is common to carefully select customers based on legal requirements and strategic corporate objectives.
 
-3. Set up environment variables
+To address this, we perform user labeling through **Credentials (authentication information)**. This enables flexible grouping of Permissioned Domains (areas where access is permitted).
 
-```bash
-# Copy the testnet credentials and XUMM API key from .env.local.public to .env
-cp .env.local.public .env
-```
+By configuring this Permissioned Domain for each token, it becomes possible to finely control the sales targets for tokens.
 
-> **Note**: This app uses:
->
-> - XRPL testnet accounts for token operations (because XAMAN wallets cannot handle testnet tokens)
-> - A demo XAMAN API key for wallet connection
->
-> The credentials in `.env.local.public` are pre-configured for testing the application. For production use, you should:
+### 3. Credentials Management Interface
 
-4. Start the development server
+This interface allows centralized management of **Credentials (authentication information)** including issuance, deletion, and reference.
 
-```bash
-npm run dev
-```
+This improves operational efficiency for administrators. However, since Credentials are highly sensitive information, only authorized users should perform these operations.
 
-The application will be available at `http://localhost:3000`.
+## System Interaction Flow
 
-> **Important**: This demo app works with the development server at `http://localhost:3000/`. This is because the XUMM API key is registered for this URL in the XAMAN developer portal. If you need to use a different URL, you'll need to:
->
-> 1. Get your own XAMAN API key from the [XAMAN Developer Portal](https://apps.xaman.dev/)
-> 2. Register your desired URL in the XAMAN developer portal
-> 3. Update the API key in your `.env` file
+1. (User) User registration through the marketplace user registration screen
+2. (Fund) KYC process based on information received from users
+3. (Fund) Credentials issuance based on KYC results
+4. (User) Access to marketplace
+5. (User) Credentials approval
+6. (App) Display token information according to Credentials
+7. (User) Transaction initiation
 
-## 🐳 How to Run Locally with Docker
+## Final Summary
 
-1. **Clone the repository**
+The **Asian Private Equity Tokenization Platform** is a tokenization platform for Asian private equity funds based on XRPL (XRP Ledger). It solves traditional financial product transaction challenges through an advanced KYC (Know Your Customer) system utilizing XRPL Credentials.
 
-```bash
-git clone https://github.com/yohei-meister/rwa-token-app
-cd rwa-token-app
-```
+---
 
-2. **Start the development server with Docker Compose**
-
-```bash
-docker compose up --build
-```
-
-3. **Stop the server**
-
-```bash
-docker compose down
-```
-
-## 📂 Project Structure
-
-```
-frontend/                    # Main application
-├── src/
-│   ├── app/                # Next.js App Router
-│   │   ├── (fund)/        # Fund management pages
-│   │   ├── (sandbox)/     # Demo & testing features
-│   │   └── (user)/        # User-related pages
-│   ├── components/        # UI components
-│   │   ├── layout/        # Layout components
-│   │   └── ui/           # shadcn/ui components
-│   ├── hooks/            # Custom React hooks
-│   ├── stores/           # Zustand state management
-│   ├── data/             # Mock data
-│   └── config/           # Configuration files
-├── package.json
-└── ...
-
-src/                        # Legacy Vite app (reference)
-├── components/
-├── pages/
-└── ...
-```
-
-## 🛠️ Development Commands
-
-```bash
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm run start
-
-# Run linter
-npm run lint
-
-# Format code
-npm run format
-```
-
-## 📝 Note
-
-This project uses XRPL Testnet.
-If the Testnet faucet is down, use preset accounts.
-
-## 🔧 Key Features
-
-- **Wallet Integration**: Connection with XAMAN wallet
-- **Credential Management**: Create, accept, and delete digital credentials
-- **Fund Management**: Investment and management features for PE funds
-- **KYC Functionality**: Know Your Customer verification process
-- **Responsive Design**: Mobile and desktop support
+Github: https://github.com/yohei-meister/rwa-token-app
+Website: https://rwa-token-app.vercel.app/
